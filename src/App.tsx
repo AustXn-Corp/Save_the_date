@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Download, Share } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { useRef, useState } from 'react'
-import html2canvas from 'html2canvas'
 
 interface CardData {
   imageUrl: string | null
@@ -62,136 +61,247 @@ function App() {
     })
   }
 
-  const handleDownload = async () => {
-    if (!cardRef.current) {
-      toast.error('Card not found')
-      return
-    }
-
-    setIsGenerating(true)
-    try {
-      const cardElement = cardRef.current.querySelector('[data-card-root]') as HTMLElement
-      if (!cardElement) {
-        throw new Error('Card element not found')
+  const generateCardImage = async (): Promise<Blob | null> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        resolve(null)
+        return
       }
 
-      const canvas = await html2canvas(cardElement, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: false,
-        backgroundColor: '#000000',
-        logging: false,
-        width: cardElement.offsetWidth,
-        height: cardElement.offsetHeight,
-        windowWidth: cardElement.offsetWidth,
-        windowHeight: cardElement.offsetHeight,
-      })
+      const width = 1200
+      const height = 1600
+      canvas.width = width
+      canvas.height = height
 
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const url = URL.createObjectURL(blob)
-          const link = document.createElement('a')
-          link.href = url
-          link.download = `save-the-date-${Date.now()}.png`
-          document.body.appendChild(link)
-          link.click()
-          document.body.removeChild(link)
-          URL.revokeObjectURL(url)
-          toast.success('Card downloaded!')
-        } else {
-          toast.error('Failed to create image')
+      ctx.fillStyle = '#000000'
+      ctx.fillRect(0, 0, width, height)
+
+      if (data.imageUrl) {
+        const img = new Image()
+        img.crossOrigin = 'anonymous'
+        
+        img.onload = () => {
+          const imgAspect = img.width / img.height
+          const canvasAspect = width / height
+          
+          let drawWidth, drawHeight, offsetX, offsetY
+          
+          if (imgAspect > canvasAspect) {
+            drawHeight = height
+            drawWidth = img.width * (height / img.height)
+            offsetX = (width - drawWidth) / 2
+            offsetY = 0
+          } else {
+            drawWidth = width
+            drawHeight = img.height * (width / img.width)
+            offsetX = 0
+            offsetY = (height - drawHeight) / 2
+          }
+          
+          ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight)
+          
+          const gradient = ctx.createLinearGradient(0, height * 0.5, 0, height)
+          gradient.addColorStop(0, 'rgba(0, 0, 0, 0.2)')
+          gradient.addColorStop(0.5, 'rgba(0, 0, 0, 0.4)')
+          gradient.addColorStop(1, 'rgba(0, 0, 0, 0.8)')
+          ctx.fillStyle = gradient
+          ctx.fillRect(0, 0, width, height)
+          
+          drawText(ctx, width, height)
+          
+          canvas.toBlob((blob) => {
+            resolve(blob)
+          }, 'image/png', 1.0)
         }
+        
+        img.onerror = () => {
+          drawText(ctx, width, height)
+          canvas.toBlob((blob) => {
+            resolve(blob)
+          }, 'image/png', 1.0)
+        }
+        
+        img.src = data.imageUrl
+      } else {
+        const gradient = ctx.createLinearGradient(0, 0, width, height)
+        gradient.addColorStop(0, 'rgba(139, 186, 153, 0.2)')
+        gradient.addColorStop(0.5, 'rgba(199, 163, 123, 0.1)')
+        gradient.addColorStop(1, 'rgba(234, 234, 234, 0.3)')
+        ctx.fillStyle = gradient
+        ctx.fillRect(0, 0, width, height)
+        
+        drawText(ctx, width, height)
+        
+        canvas.toBlob((blob) => {
+          resolve(blob)
+        }, 'image/png', 1.0)
+      }
+    })
+  }
+
+  const drawText = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+    ctx.textAlign = 'center'
+    ctx.fillStyle = '#FFFFFF'
+    
+    ctx.font = '400 24px Inter, sans-serif'
+    ctx.letterSpacing = '0.3em'
+    ctx.fillText('SAVE THE DATE', width / 2, height / 2 - 280)
+    
+    ctx.font = 'bold 120px "Playfair Display", serif'
+    ctx.fillText(data.name1 || 'First Name', width / 2, height / 2 - 140)
+    
+    ctx.font = '400 60px "Playfair Display", serif'
+    ctx.globalAlpha = 0.9
+    ctx.fillText('&', width / 2, height / 2 - 40)
+    ctx.globalAlpha = 1
+    
+    ctx.font = 'bold 120px "Playfair Display", serif'
+    ctx.fillText(data.name2 || 'Second Name', width / 2, height / 2 + 80)
+    
+    if (data.date) {
+      ctx.font = '600 56px "Crimson Pro", serif'
+      ctx.fillText(data.date, width / 2, height / 2 + 200)
+    }
+    
+    if (data.location) {
+      ctx.font = '400 36px Inter, sans-serif'
+      ctx.globalAlpha = 0.9
+      wrapText(ctx, data.location, width / 2, height / 2 + 280, width - 200, 50)
+      ctx.globalAlpha = 1
+    }
+    
+    if (data.message) {
+      ctx.font = 'italic 28px Inter, sans-serif'
+      ctx.globalAlpha = 0.8
+      wrapText(ctx, data.message, width / 2, height / 2 + 360, width - 200, 40)
+      ctx.globalAlpha = 1
+    }
+  }
+
+  const wrapText = (ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number) => {
+    const words = text.split(' ')
+    let line = ''
+    let currentY = y
+
+    for (let i = 0; i < words.length; i++) {
+      const testLine = line + words[i] + ' '
+      const metrics = ctx.measureText(testLine)
+      const testWidth = metrics.width
+      
+      if (testWidth > maxWidth && i > 0) {
+        ctx.fillText(line, x, currentY)
+        line = words[i] + ' '
+        currentY += lineHeight
+      } else {
+        line = testLine
+      }
+    }
+    ctx.fillText(line, x, currentY)
+  }
+
+  const handleDownload = async () => {
+    setIsGenerating(true)
+    try {
+      const blob = await generateCardImage()
+      
+      if (!blob) {
+        toast.error('Failed to generate image')
         setIsGenerating(false)
-      }, 'image/png')
+        return
+      }
+
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `save-the-date-${data.name1 || 'card'}-${data.name2 || 'card'}.png`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+      toast.success('Card downloaded!')
+      setIsGenerating(false)
     } catch (error) {
       console.error('Download error:', error)
-      toast.error('Failed to download card. Please try again.')
+      toast.error('Failed to download card')
       setIsGenerating(false)
     }
   }
 
   const handleShare = async () => {
-    if (!cardRef.current) {
-      toast.error('Card not found')
-      return
-    }
-
     setIsGenerating(true)
     try {
-      const cardElement = cardRef.current.querySelector('[data-card-root]') as HTMLElement
-      if (!cardElement) {
-        throw new Error('Card element not found')
+      const blob = await generateCardImage()
+      
+      if (!blob) {
+        toast.error('Failed to generate image')
+        setIsGenerating(false)
+        return
       }
 
-      const canvas = await html2canvas(cardElement, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: false,
-        backgroundColor: '#000000',
-        logging: false,
-        width: cardElement.offsetWidth,
-        height: cardElement.offsetHeight,
-        windowWidth: cardElement.offsetWidth,
-        windowHeight: cardElement.offsetHeight,
+      const file = new File([blob], `save-the-date-${data.name1 || 'card'}-${data.name2 || 'card'}.png`, { 
+        type: 'image/png' 
       })
+      
+      const shareData = {
+        title: 'Save The Date',
+        text: `${data.name1 || 'First Name'} & ${data.name2 || 'Second Name'}${data.date ? ' - ' + data.date : ''}`,
+        files: [file],
+      }
 
-      canvas.toBlob(async (blob) => {
-        if (!blob) {
-          toast.error('Failed to create image')
-          setIsGenerating(false)
-          return
-        }
-
-        const file = new File([blob], `save-the-date-${Date.now()}.png`, { type: 'image/png' })
-        
-        if (navigator.share) {
-          try {
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-              await navigator.share({
-                title: 'Save The Date',
-                text: `${data.name1 || 'First Name'} & ${data.name2 || 'Second Name'} - ${data.date || 'Our Special Day'}`,
-                files: [file],
-              })
-              toast.success('Shared successfully!')
-            } else {
-              await navigator.share({
-                title: 'Save The Date',
-                text: `${data.name1 || 'First Name'} & ${data.name2 || 'Second Name'} - ${data.date || 'Our Special Day'}`,
-              })
-              toast.info('Shared text only - device does not support image sharing')
-            }
-          } catch (error: any) {
-            if (error.name === 'AbortError') {
-              toast.info('Share cancelled')
-            } else {
-              console.error('Share error:', error)
-              const url = URL.createObjectURL(blob)
-              const link = document.createElement('a')
-              link.href = url
-              link.download = `save-the-date-${Date.now()}.png`
-              document.body.appendChild(link)
-              link.click()
-              document.body.removeChild(link)
-              URL.revokeObjectURL(url)
-              toast.info('Downloaded instead')
-            }
+      if (navigator.share) {
+        try {
+          if (navigator.canShare && navigator.canShare(shareData)) {
+            await navigator.share(shareData)
+            toast.success('Shared successfully!')
+          } else {
+            await navigator.share({
+              title: shareData.title,
+              text: shareData.text,
+            })
+            toast.info('Shared text only - downloading image separately')
+            
+            const url = URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = url
+            link.download = file.name
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+            URL.revokeObjectURL(url)
           }
-        } else {
-          const url = URL.createObjectURL(blob)
-          const link = document.createElement('a')
-          link.href = url
-          link.download = `save-the-date-${Date.now()}.png`
-          document.body.appendChild(link)
-          link.click()
-          document.body.removeChild(link)
-          URL.revokeObjectURL(url)
-          toast.info('Downloaded - sharing not supported on this device')
+        } catch (error: any) {
+          if (error.name === 'AbortError') {
+            toast.info('Share cancelled')
+          } else {
+            console.error('Share error:', error)
+            const url = URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = url
+            link.download = file.name
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+            URL.revokeObjectURL(url)
+            toast.success('Downloaded instead')
+          }
         }
-        setIsGenerating(false)
-      }, 'image/png')
+      } else {
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = file.name
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+        toast.info('Downloaded - sharing not supported on this device')
+      }
+      setIsGenerating(false)
     } catch (error) {
       console.error('Share error:', error)
-      toast.error('Failed to generate card image. Please try again.')
+      toast.error('Failed to share card')
       setIsGenerating(false)
     }
   }
