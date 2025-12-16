@@ -73,8 +73,25 @@ function App() {
       const canvas = await html2canvas(cardRef.current, {
         scale: 2,
         useCORS: true,
-        allowTaint: true,
-        backgroundColor: null,
+        allowTaint: false,
+        backgroundColor: '#000000',
+        logging: false,
+        width: cardRef.current.offsetWidth,
+        height: cardRef.current.offsetHeight,
+        windowWidth: cardRef.current.offsetWidth,
+        windowHeight: cardRef.current.offsetHeight,
+        onclone: (clonedDoc) => {
+          const clonedCard = clonedDoc.querySelector('[data-card-root]') as HTMLElement
+          if (clonedCard) {
+            clonedCard.style.transform = 'none'
+            clonedCard.style.animation = 'none'
+            const animatedElements = clonedCard.querySelectorAll('[style*="transform"]')
+            animatedElements.forEach((el) => {
+              (el as HTMLElement).style.transform = 'none'
+              ;(el as HTMLElement).style.animation = 'none'
+            })
+          }
+        },
       })
 
       canvas.toBlob((blob) => {
@@ -83,13 +100,18 @@ function App() {
           const link = document.createElement('a')
           link.href = url
           link.download = 'save-the-date.png'
+          document.body.appendChild(link)
           link.click()
+          document.body.removeChild(link)
           URL.revokeObjectURL(url)
           toast.success('Card downloaded!')
+        } else {
+          toast.error('Failed to create image')
         }
       }, 'image/png')
     } catch (error) {
-      toast.error('Failed to download card')
+      console.error('Download error:', error)
+      toast.error('Failed to download card. Please try again.')
     } finally {
       setIsGenerating(false)
     }
@@ -106,41 +128,84 @@ function App() {
       const canvas = await html2canvas(cardRef.current, {
         scale: 2,
         useCORS: true,
-        allowTaint: true,
-        backgroundColor: null,
+        allowTaint: false,
+        backgroundColor: '#000000',
+        logging: false,
+        width: cardRef.current.offsetWidth,
+        height: cardRef.current.offsetHeight,
+        windowWidth: cardRef.current.offsetWidth,
+        windowHeight: cardRef.current.offsetHeight,
+        onclone: (clonedDoc) => {
+          const clonedCard = clonedDoc.querySelector('[data-card-root]') as HTMLElement
+          if (clonedCard) {
+            clonedCard.style.transform = 'none'
+            clonedCard.style.animation = 'none'
+            const animatedElements = clonedCard.querySelectorAll('[style*="transform"]')
+            animatedElements.forEach((el) => {
+              (el as HTMLElement).style.transform = 'none'
+              ;(el as HTMLElement).style.animation = 'none'
+            })
+          }
+        },
       })
 
       canvas.toBlob(async (blob) => {
-        if (blob) {
-          const file = new File([blob], 'save-the-date.png', { type: 'image/png' })
-          
-          if (navigator.share && navigator.canShare?.({ files: [file] })) {
-            try {
+        if (!blob) {
+          toast.error('Failed to create image')
+          setIsGenerating(false)
+          return
+        }
+
+        const file = new File([blob], 'save-the-date.png', { type: 'image/png' })
+        
+        if (navigator.share) {
+          try {
+            if (navigator.canShare?.({ files: [file] })) {
               await navigator.share({
                 title: 'Save The Date',
                 text: `${data.name1 || 'First Name'} & ${data.name2 || 'Second Name'} - ${data.date || 'Our Special Day'}`,
                 files: [file],
               })
               toast.success('Shared successfully!')
-            } catch (error: any) {
-              if (error.name !== 'AbortError') {
-                toast.error('Failed to share')
-              }
+            } else {
+              await navigator.share({
+                title: 'Save The Date',
+                text: `${data.name1 || 'First Name'} & ${data.name2 || 'Second Name'} - ${data.date || 'Our Special Day'}`,
+              })
+              toast.info('Shared text only - device does not support image sharing')
             }
-          } else {
-            const url = URL.createObjectURL(blob)
-            const link = document.createElement('a')
-            link.href = url
-            link.download = 'save-the-date.png'
-            link.click()
-            URL.revokeObjectURL(url)
-            toast.info('Downloaded instead - sharing not supported on this device')
+          } catch (error: any) {
+            if (error.name === 'AbortError') {
+              toast.info('Share cancelled')
+            } else {
+              console.error('Share error:', error)
+              const url = URL.createObjectURL(blob)
+              const link = document.createElement('a')
+              link.href = url
+              link.download = 'save-the-date.png'
+              document.body.appendChild(link)
+              link.click()
+              document.body.removeChild(link)
+              URL.revokeObjectURL(url)
+              toast.info('Downloaded instead')
+            }
           }
+        } else {
+          const url = URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.href = url
+          link.download = 'save-the-date.png'
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          URL.revokeObjectURL(url)
+          toast.info('Downloaded - sharing not supported on this device')
         }
+        setIsGenerating(false)
       }, 'image/png')
     } catch (error) {
-      toast.error('Failed to generate card image')
-    } finally {
+      console.error('Share error:', error)
+      toast.error('Failed to generate card image. Please try again.')
       setIsGenerating(false)
     }
   }
