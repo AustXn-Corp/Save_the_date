@@ -34,11 +34,11 @@ A digital save the date card creator that allows users to design and customize e
 - **Success criteria**: Animations run smoothly at 60fps, sparkles twinkle and drift, leaves flow naturally across the card, density controls respond instantly and affect both live preview and exported image
 
 ### Download/Share
-- **Functionality**: Export the finished card as an image or shareable link
-- **Purpose**: Allow users to distribute their save the date to guests
-- **Trigger**: Click download/share button
-- **Progression**: Click button → Processing indicator → Download starts or share dialog appears → Confirmation message
-- **Success criteria**: Exported card maintains quality and includes all customizations and current animation state
+- **Functionality**: Export the finished card as an animated video (MP4/WebM) or animated GIF with all animations included
+- **Purpose**: Allow users to distribute their animated save the date to guests via text, email, or social media
+- **Trigger**: Select export format, then click download/share button
+- **Progression**: Select format (video/gif) → Click button → Processing with progress indicator → Video renders with live animations for 5 seconds → Download starts or share dialog appears → Confirmation message
+- **Success criteria**: Exported video maintains quality, includes all customizations, captures sparkles and leaves animations in motion, and works across messaging apps and email clients
 
 ## Edge Case Handling
 - **No Image Uploaded**: Show elegant placeholder with upload prompt, disable download until image is added
