@@ -70,37 +70,21 @@ function App() {
 
     setIsGenerating(true)
     try {
-      const canvas = await html2canvas(cardRef.current, {
-        scale: 3,
+      const cardElement = cardRef.current.querySelector('[data-card-root]') as HTMLElement
+      if (!cardElement) {
+        throw new Error('Card element not found')
+      }
+
+      const canvas = await html2canvas(cardElement, {
+        scale: 2,
         useCORS: true,
-        allowTaint: true,
-        backgroundColor: null,
+        allowTaint: false,
+        backgroundColor: '#000000',
         logging: false,
-        imageTimeout: 0,
-        onclone: (clonedDoc) => {
-          const clonedCard = clonedDoc.querySelector('[data-card-root]') as HTMLElement
-          if (clonedCard) {
-            clonedCard.style.transform = 'none'
-            clonedCard.style.boxShadow = 'none'
-            
-            const allElements = clonedCard.querySelectorAll('*')
-            allElements.forEach((el) => {
-              const htmlEl = el as HTMLElement
-              htmlEl.style.animation = 'none'
-              htmlEl.style.transition = 'none'
-            })
-            
-            const motionDivs = clonedCard.querySelectorAll('div[style*="opacity"]')
-            motionDivs.forEach((el) => {
-              const htmlEl = el as HTMLElement
-              if (htmlEl.textContent?.includes('🍃')) {
-                htmlEl.style.opacity = '0.4'
-              } else {
-                htmlEl.style.opacity = '1'
-              }
-            })
-          }
-        },
+        width: cardElement.offsetWidth,
+        height: cardElement.offsetHeight,
+        windowWidth: cardElement.offsetWidth,
+        windowHeight: cardElement.offsetHeight,
       })
 
       canvas.toBlob((blob) => {
@@ -117,11 +101,11 @@ function App() {
         } else {
           toast.error('Failed to create image')
         }
-      }, 'image/png', 0.95)
+        setIsGenerating(false)
+      }, 'image/png')
     } catch (error) {
       console.error('Download error:', error)
       toast.error('Failed to download card. Please try again.')
-    } finally {
       setIsGenerating(false)
     }
   }
@@ -134,37 +118,21 @@ function App() {
 
     setIsGenerating(true)
     try {
-      const canvas = await html2canvas(cardRef.current, {
-        scale: 3,
+      const cardElement = cardRef.current.querySelector('[data-card-root]') as HTMLElement
+      if (!cardElement) {
+        throw new Error('Card element not found')
+      }
+
+      const canvas = await html2canvas(cardElement, {
+        scale: 2,
         useCORS: true,
-        allowTaint: true,
-        backgroundColor: null,
+        allowTaint: false,
+        backgroundColor: '#000000',
         logging: false,
-        imageTimeout: 0,
-        onclone: (clonedDoc) => {
-          const clonedCard = clonedDoc.querySelector('[data-card-root]') as HTMLElement
-          if (clonedCard) {
-            clonedCard.style.transform = 'none'
-            clonedCard.style.boxShadow = 'none'
-            
-            const allElements = clonedCard.querySelectorAll('*')
-            allElements.forEach((el) => {
-              const htmlEl = el as HTMLElement
-              htmlEl.style.animation = 'none'
-              htmlEl.style.transition = 'none'
-            })
-            
-            const motionDivs = clonedCard.querySelectorAll('div[style*="opacity"]')
-            motionDivs.forEach((el) => {
-              const htmlEl = el as HTMLElement
-              if (htmlEl.textContent?.includes('🍃')) {
-                htmlEl.style.opacity = '0.4'
-              } else {
-                htmlEl.style.opacity = '1'
-              }
-            })
-          }
-        },
+        width: cardElement.offsetWidth,
+        height: cardElement.offsetHeight,
+        windowWidth: cardElement.offsetWidth,
+        windowHeight: cardElement.offsetHeight,
       })
 
       canvas.toBlob(async (blob) => {
@@ -220,7 +188,7 @@ function App() {
           toast.info('Downloaded - sharing not supported on this device')
         }
         setIsGenerating(false)
-      }, 'image/png', 0.95)
+      }, 'image/png')
     } catch (error) {
       console.error('Share error:', error)
       toast.error('Failed to generate card image. Please try again.')

@@ -25,13 +25,12 @@ export function SaveTheDateCard({
   return (
     <div data-card-root className="relative w-full aspect-[3/4] rounded-xl overflow-hidden shadow-2xl bg-black">
       {imageUrl ? (
-        <img
-          src={imageUrl}
-          alt="Save the date background"
-          className="absolute inset-0 w-full h-full object-cover"
-          crossOrigin="anonymous"
-          loading="eager"
-        />
+        <div className="absolute inset-0 w-full h-full" style={{
+          backgroundImage: `url(${imageUrl})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }} />
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-accent/10 to-secondary/30" />
       )}
