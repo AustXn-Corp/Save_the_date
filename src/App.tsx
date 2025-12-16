@@ -217,44 +217,38 @@ function App() {
   }
 
   const drawSparkles = (ctx: CanvasRenderingContext2D, width: number, height: number, count: number) => {
-    const sparkleColor = 'rgba(199, 163, 123, 0.8)'
     const sparkleCount = count
     
     for (let i = 0; i < sparkleCount; i++) {
       const x = Math.random() * width
       const y = Math.random() * height
-      const size = 3 + Math.random() * 5
-      const rotation = Math.random() * Math.PI * 2
+      const size = 8 + Math.random() * 12
+      const opacity = 0.6 + Math.random() * 0.4
       
       ctx.save()
       ctx.translate(x, y)
-      ctx.rotate(rotation)
+      ctx.globalAlpha = opacity
       
-      ctx.fillStyle = sparkleColor
-      ctx.shadowColor = sparkleColor
-      ctx.shadowBlur = 10
+      const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, size)
+      gradient.addColorStop(0, 'rgba(199, 163, 123, 1)')
+      gradient.addColorStop(0.3, 'rgba(199, 163, 123, 0.9)')
+      gradient.addColorStop(0.7, 'rgba(199, 163, 123, 0.4)')
+      gradient.addColorStop(1, 'rgba(199, 163, 123, 0)')
+      
+      ctx.fillStyle = gradient
+      ctx.shadowColor = 'rgba(199, 163, 123, 0.8)'
+      ctx.shadowBlur = 20
       
       ctx.beginPath()
-      for (let j = 0; j < 4; j++) {
-        const angle = (j * Math.PI) / 2
-        const px = Math.cos(angle) * size
-        const py = Math.sin(angle) * size
-        
-        if (j === 0) {
-          ctx.moveTo(px, py)
-        } else {
-          ctx.lineTo(px, py)
-        }
-        
-        const midAngle = angle + Math.PI / 4
-        const midPx = Math.cos(midAngle) * (size * 0.3)
-        const midPy = Math.sin(midAngle) * (size * 0.3)
-        ctx.lineTo(midPx, midPy)
-      }
-      ctx.closePath()
+      ctx.arc(0, 0, size, 0, Math.PI * 2)
       ctx.fill()
       
-      ctx.shadowBlur = 0
+      ctx.shadowBlur = 30
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'
+      ctx.beginPath()
+      ctx.arc(0, 0, size * 0.3, 0, Math.PI * 2)
+      ctx.fill()
+      
       ctx.restore()
     }
   }
@@ -265,34 +259,47 @@ function App() {
     for (let i = 0; i < leafCount; i++) {
       const x = Math.random() * width
       const y = Math.random() * height
-      const size = 20 + Math.random() * 25
+      const size = 30 + Math.random() * 30
       const rotation = Math.random() * Math.PI * 2
-      const opacity = 0.3 + Math.random() * 0.3
+      const opacity = 0.4 + Math.random() * 0.3
       
       ctx.save()
       ctx.translate(x, y)
       ctx.rotate(rotation)
       ctx.globalAlpha = opacity
       
-      const gradient = ctx.createLinearGradient(-size/2, -size/2, size/2, size/2)
-      gradient.addColorStop(0, 'rgba(100, 150, 120, 0.6)')
-      gradient.addColorStop(0.5, 'rgba(139, 186, 153, 0.7)')
-      gradient.addColorStop(1, 'rgba(100, 150, 120, 0.5)')
+      const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, size)
+      gradient.addColorStop(0, 'rgba(139, 186, 153, 0.9)')
+      gradient.addColorStop(0.5, 'rgba(100, 150, 120, 0.7)')
+      gradient.addColorStop(1, 'rgba(80, 130, 100, 0.4)')
       
       ctx.fillStyle = gradient
-      ctx.strokeStyle = 'rgba(80, 130, 100, 0.6)'
-      ctx.lineWidth = 1
+      ctx.strokeStyle = 'rgba(80, 130, 100, 0.7)'
+      ctx.lineWidth = 2
       
       ctx.beginPath()
-      ctx.ellipse(0, 0, size * 0.35, size * 0.5, 0, 0, Math.PI * 2)
+      ctx.ellipse(0, 0, size * 0.4, size * 0.6, 0, 0, Math.PI * 2)
       ctx.fill()
       ctx.stroke()
       
       ctx.beginPath()
-      ctx.moveTo(0, -size * 0.5)
-      ctx.lineTo(0, size * 0.5)
-      ctx.strokeStyle = 'rgba(80, 130, 100, 0.5)'
+      ctx.moveTo(0, -size * 0.6)
+      ctx.lineTo(0, size * 0.6)
+      ctx.strokeStyle = 'rgba(60, 110, 80, 0.8)'
+      ctx.lineWidth = 2.5
+      ctx.stroke()
+      
+      ctx.globalAlpha = opacity * 0.5
+      ctx.beginPath()
+      ctx.moveTo(0, -size * 0.2)
+      ctx.quadraticCurveTo(size * 0.2, 0, 0, size * 0.2)
+      ctx.strokeStyle = 'rgba(60, 110, 80, 0.6)'
       ctx.lineWidth = 1.5
+      ctx.stroke()
+      
+      ctx.beginPath()
+      ctx.moveTo(0, size * 0.2)
+      ctx.quadraticCurveTo(-size * 0.2, 0, 0, -size * 0.2)
       ctx.stroke()
       
       ctx.restore()
