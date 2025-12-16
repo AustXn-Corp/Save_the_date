@@ -78,6 +78,15 @@ function App() {
       ctx.fillStyle = '#000000'
       ctx.fillRect(0, 0, width, height)
 
+      const finalizeCanvas = () => {
+        drawText(ctx, width, height)
+        drawDecorations(ctx, width, height)
+        
+        canvas.toBlob((blob) => {
+          resolve(blob)
+        }, 'image/png', 1.0)
+      }
+
       if (data.imageUrl) {
         const img = new Image()
         img.crossOrigin = 'anonymous'
@@ -109,18 +118,11 @@ function App() {
           ctx.fillStyle = gradient
           ctx.fillRect(0, 0, width, height)
           
-          drawText(ctx, width, height)
-          
-          canvas.toBlob((blob) => {
-            resolve(blob)
-          }, 'image/png', 1.0)
+          finalizeCanvas()
         }
         
         img.onerror = () => {
-          drawText(ctx, width, height)
-          canvas.toBlob((blob) => {
-            resolve(blob)
-          }, 'image/png', 1.0)
+          finalizeCanvas()
         }
         
         img.src = data.imageUrl
@@ -132,11 +134,7 @@ function App() {
         ctx.fillStyle = gradient
         ctx.fillRect(0, 0, width, height)
         
-        drawText(ctx, width, height)
-        
-        canvas.toBlob((blob) => {
-          resolve(blob)
-        }, 'image/png', 1.0)
+        finalizeCanvas()
       }
     })
   }
@@ -199,6 +197,98 @@ function App() {
       }
     }
     ctx.fillText(line, x, currentY)
+  }
+
+  const drawDecorations = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+    if (data.showSparkles) {
+      drawSparkles(ctx, width, height)
+    }
+    if (data.showLeaves) {
+      drawLeaves(ctx, width, height)
+    }
+  }
+
+  const drawSparkles = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+    const sparkleColor = 'rgba(199, 163, 123, 0.8)'
+    const sparkleCount = 25
+    
+    for (let i = 0; i < sparkleCount; i++) {
+      const x = Math.random() * width
+      const y = Math.random() * height
+      const size = 3 + Math.random() * 5
+      const rotation = Math.random() * Math.PI * 2
+      
+      ctx.save()
+      ctx.translate(x, y)
+      ctx.rotate(rotation)
+      
+      ctx.fillStyle = sparkleColor
+      ctx.shadowColor = sparkleColor
+      ctx.shadowBlur = 10
+      
+      ctx.beginPath()
+      for (let j = 0; j < 4; j++) {
+        const angle = (j * Math.PI) / 2
+        const px = Math.cos(angle) * size
+        const py = Math.sin(angle) * size
+        
+        if (j === 0) {
+          ctx.moveTo(px, py)
+        } else {
+          ctx.lineTo(px, py)
+        }
+        
+        const midAngle = angle + Math.PI / 4
+        const midPx = Math.cos(midAngle) * (size * 0.3)
+        const midPy = Math.sin(midAngle) * (size * 0.3)
+        ctx.lineTo(midPx, midPy)
+      }
+      ctx.closePath()
+      ctx.fill()
+      
+      ctx.shadowBlur = 0
+      ctx.restore()
+    }
+  }
+
+  const drawLeaves = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+    const leafCount = 20
+    
+    for (let i = 0; i < leafCount; i++) {
+      const x = Math.random() * width
+      const y = Math.random() * height
+      const size = 20 + Math.random() * 25
+      const rotation = Math.random() * Math.PI * 2
+      const opacity = 0.3 + Math.random() * 0.3
+      
+      ctx.save()
+      ctx.translate(x, y)
+      ctx.rotate(rotation)
+      ctx.globalAlpha = opacity
+      
+      const gradient = ctx.createLinearGradient(-size/2, -size/2, size/2, size/2)
+      gradient.addColorStop(0, 'rgba(100, 150, 120, 0.6)')
+      gradient.addColorStop(0.5, 'rgba(139, 186, 153, 0.7)')
+      gradient.addColorStop(1, 'rgba(100, 150, 120, 0.5)')
+      
+      ctx.fillStyle = gradient
+      ctx.strokeStyle = 'rgba(80, 130, 100, 0.6)'
+      ctx.lineWidth = 1
+      
+      ctx.beginPath()
+      ctx.ellipse(0, 0, size * 0.35, size * 0.5, 0, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.stroke()
+      
+      ctx.beginPath()
+      ctx.moveTo(0, -size * 0.5)
+      ctx.lineTo(0, size * 0.5)
+      ctx.strokeStyle = 'rgba(80, 130, 100, 0.5)'
+      ctx.lineWidth = 1.5
+      ctx.stroke()
+      
+      ctx.restore()
+    }
   }
 
   const handleDownload = async () => {
