@@ -2,6 +2,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
+import { Slider } from '@/components/ui/slider'
 import { Sparkle, Leaf } from '@phosphor-icons/react'
 import { Badge } from '@/components/ui/badge'
 
@@ -13,6 +14,8 @@ interface EditorPanelProps {
   message: string
   showSparkles: boolean
   showLeaves: boolean
+  sparklesDensity: number
+  leavesDensity: number
   onName1Change: (value: string) => void
   onName2Change: (value: string) => void
   onDateChange: (value: string) => void
@@ -20,6 +23,8 @@ interface EditorPanelProps {
   onMessageChange: (value: string) => void
   onSparklesToggle: (value: boolean) => void
   onLeavesToggle: (value: boolean) => void
+  onSparklesDensityChange: (value: number) => void
+  onLeavesDensityChange: (value: number) => void
 }
 
 export function EditorPanel({
@@ -30,6 +35,8 @@ export function EditorPanel({
   message,
   showSparkles,
   showLeaves,
+  sparklesDensity,
+  leavesDensity,
   onName1Change,
   onName2Change,
   onDateChange,
@@ -37,6 +44,8 @@ export function EditorPanel({
   onMessageChange,
   onSparklesToggle,
   onLeavesToggle,
+  onSparklesDensityChange,
+  onLeavesDensityChange,
 }: EditorPanelProps) {
   return (
     <div className="space-y-6">
@@ -113,38 +122,84 @@ export function EditorPanel({
       <div className="space-y-4 pt-6 border-t border-border">
         <h3 className="font-heading text-lg font-semibold">Animations</h3>
         
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkle size={20} className="text-accent" weight={showSparkles ? 'fill' : 'regular'} />
-            <Label htmlFor="sparkles" className="font-body font-medium cursor-pointer">
-              Sparkles
-            </Label>
-            {showSparkles && (
-              <Badge variant="secondary" className="text-xs">Active</Badge>
-            )}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkle size={20} className="text-accent" weight={showSparkles ? 'fill' : 'regular'} />
+              <Label htmlFor="sparkles" className="font-body font-medium cursor-pointer">
+                Sparkles
+              </Label>
+              {showSparkles && (
+                <Badge variant="secondary" className="text-xs">Active</Badge>
+              )}
+            </div>
+            <Switch
+              id="sparkles"
+              checked={showSparkles}
+              onCheckedChange={onSparklesToggle}
+            />
           </div>
-          <Switch
-            id="sparkles"
-            checked={showSparkles}
-            onCheckedChange={onSparklesToggle}
-          />
+          
+          {showSparkles && (
+            <div className="pl-7 space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="font-body text-sm text-muted-foreground">
+                  Density
+                </Label>
+                <span className="font-body text-xs text-muted-foreground">
+                  {sparklesDensity}
+                </span>
+              </div>
+              <Slider
+                value={[sparklesDensity]}
+                onValueChange={(values) => onSparklesDensityChange(values[0])}
+                min={5}
+                max={50}
+                step={5}
+                className="w-full"
+              />
+            </div>
+          )}
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Leaf size={20} className="text-primary" weight={showLeaves ? 'fill' : 'regular'} />
-            <Label htmlFor="leaves" className="font-body font-medium cursor-pointer">
-              Flowing Leaves
-            </Label>
-            {showLeaves && (
-              <Badge variant="secondary" className="text-xs">Active</Badge>
-            )}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Leaf size={20} className="text-primary" weight={showLeaves ? 'fill' : 'regular'} />
+              <Label htmlFor="leaves" className="font-body font-medium cursor-pointer">
+                Flowing Leaves
+              </Label>
+              {showLeaves && (
+                <Badge variant="secondary" className="text-xs">Active</Badge>
+              )}
+            </div>
+            <Switch
+              id="leaves"
+              checked={showLeaves}
+              onCheckedChange={onLeavesToggle}
+            />
           </div>
-          <Switch
-            id="leaves"
-            checked={showLeaves}
-            onCheckedChange={onLeavesToggle}
-          />
+          
+          {showLeaves && (
+            <div className="pl-7 space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="font-body text-sm text-muted-foreground">
+                  Density
+                </Label>
+                <span className="font-body text-xs text-muted-foreground">
+                  {leavesDensity}
+                </span>
+              </div>
+              <Slider
+                value={[leavesDensity]}
+                onValueChange={(values) => onLeavesDensityChange(values[0])}
+                min={5}
+                max={40}
+                step={5}
+                className="w-full"
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

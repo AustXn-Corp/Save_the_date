@@ -10,6 +10,8 @@ interface SaveTheDateCardProps {
   message: string
   showSparkles: boolean
   showLeaves: boolean
+  sparklesDensity: number
+  leavesDensity: number
 }
 
 export function SaveTheDateCard({
@@ -21,6 +23,8 @@ export function SaveTheDateCard({
   message,
   showSparkles,
   showLeaves,
+  sparklesDensity,
+  leavesDensity,
 }: SaveTheDateCardProps) {
   return (
     <div data-card-root className="relative w-full aspect-[3/4] rounded-xl overflow-hidden shadow-2xl bg-black">
@@ -37,8 +41,8 @@ export function SaveTheDateCard({
 
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
 
-      {showSparkles && <Sparkles />}
-      {showLeaves && <Leaves />}
+      {showSparkles && <Sparkles count={sparklesDensity} />}
+      {showLeaves && <Leaves count={leavesDensity} />}
 
       <div className="relative h-full flex flex-col items-center justify-center p-8 text-center text-white">
         <motion.div
@@ -83,8 +87,8 @@ export function SaveTheDateCard({
   )
 }
 
-function Sparkles() {
-  const sparkles = Array.from({ length: 20 })
+function Sparkles({ count }: { count: number }) {
+  const sparkles = Array.from({ length: count })
 
   return (
     <div className="absolute inset-0 pointer-events-none">
@@ -116,8 +120,8 @@ function Sparkles() {
   )
 }
 
-function Leaves() {
-  const leaves = Array.from({ length: 15 })
+function Leaves({ count }: { count: number }) {
+  const leaves = Array.from({ length: count })
 
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">

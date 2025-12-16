@@ -17,6 +17,8 @@ interface CardData {
   message: string
   showSparkles: boolean
   showLeaves: boolean
+  sparklesDensity: number
+  leavesDensity: number
 }
 
 function App() {
@@ -29,6 +31,8 @@ function App() {
     message: '',
     showSparkles: true,
     showLeaves: true,
+    sparklesDensity: 25,
+    leavesDensity: 20,
   })
 
   const cardRef = useRef<HTMLDivElement>(null)
@@ -43,6 +47,8 @@ function App() {
     message: '',
     showSparkles: true,
     showLeaves: true,
+    sparklesDensity: 25,
+    leavesDensity: 20,
   }
 
   const updateCardData = (updates: Partial<CardData>) => {
@@ -56,6 +62,8 @@ function App() {
         message: '',
         showSparkles: true,
         showLeaves: true,
+        sparklesDensity: 25,
+        leavesDensity: 20,
       }
       return { ...base, ...updates }
     })
@@ -201,16 +209,16 @@ function App() {
 
   const drawDecorations = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
     if (data.showSparkles) {
-      drawSparkles(ctx, width, height)
+      drawSparkles(ctx, width, height, data.sparklesDensity)
     }
     if (data.showLeaves) {
-      drawLeaves(ctx, width, height)
+      drawLeaves(ctx, width, height, data.leavesDensity)
     }
   }
 
-  const drawSparkles = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+  const drawSparkles = (ctx: CanvasRenderingContext2D, width: number, height: number, count: number) => {
     const sparkleColor = 'rgba(199, 163, 123, 0.8)'
-    const sparkleCount = 25
+    const sparkleCount = count
     
     for (let i = 0; i < sparkleCount; i++) {
       const x = Math.random() * width
@@ -251,8 +259,8 @@ function App() {
     }
   }
 
-  const drawLeaves = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
-    const leafCount = 20
+  const drawLeaves = (ctx: CanvasRenderingContext2D, width: number, height: number, count: number) => {
+    const leafCount = count
     
     for (let i = 0; i < leafCount; i++) {
       const x = Math.random() * width
@@ -419,6 +427,8 @@ function App() {
               message={data.message}
               showSparkles={data.showSparkles}
               showLeaves={data.showLeaves}
+              sparklesDensity={data.sparklesDensity}
+              leavesDensity={data.leavesDensity}
             />
             
             <div className="flex gap-3 mt-6">
@@ -459,6 +469,8 @@ function App() {
                 message={data.message}
                 showSparkles={data.showSparkles}
                 showLeaves={data.showLeaves}
+                sparklesDensity={data.sparklesDensity}
+                leavesDensity={data.leavesDensity}
                 onName1Change={(value) => updateCardData({ name1: value })}
                 onName2Change={(value) => updateCardData({ name2: value })}
                 onDateChange={(value) => updateCardData({ date: value })}
@@ -466,6 +478,8 @@ function App() {
                 onMessageChange={(value) => updateCardData({ message: value })}
                 onSparklesToggle={(value) => updateCardData({ showSparkles: value })}
                 onLeavesToggle={(value) => updateCardData({ showLeaves: value })}
+                onSparklesDensityChange={(value) => updateCardData({ sparklesDensity: value })}
+                onLeavesDensityChange={(value) => updateCardData({ leavesDensity: value })}
               />
             </div>
           </Card>

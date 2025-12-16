@@ -27,11 +27,11 @@ A digital save the date card creator that allows users to design and customize e
 - **Success criteria**: All text appears readable on the card with proper hierarchy, updates appear instantly in preview
 
 ### Animation Controls
-- **Functionality**: Toggle switches to enable/disable sparkles and flowing leaves animations
-- **Purpose**: Add whimsical, celebratory movement to bring the card to life
-- **Trigger**: User clicks toggle switches for sparkles or leaves
-- **Progression**: Click toggle → Animation starts/stops immediately → Visual feedback shows active state
-- **Success criteria**: Animations run smoothly at 60fps, sparkles twinkle and drift, leaves flow naturally across the card
+- **Functionality**: Toggle switches to enable/disable sparkles and flowing leaves animations, with density sliders to control the quantity of each effect
+- **Purpose**: Add whimsical, celebratory movement to bring the card to life while giving users fine-grained control over animation intensity
+- **Trigger**: User clicks toggle switches for sparkles or leaves, adjusts density sliders when animations are enabled
+- **Progression**: Click toggle → Animation starts/stops immediately → Visual feedback shows active state → Adjust density slider → See particle count update in real-time
+- **Success criteria**: Animations run smoothly at 60fps, sparkles twinkle and drift, leaves flow naturally across the card, density controls respond instantly and affect both live preview and exported image
 
 ### Download/Share
 - **Functionality**: Export the finished card as an image or shareable link
@@ -90,6 +90,7 @@ Animations should feel magical and celebratory without overwhelming the card con
   - Card component for the main save the date preview and editor panel
   - Input fields for text entry (names, date, location, message)
   - Switch components for animation toggles
+  - Slider components for animation density controls (5-50 for sparkles, 5-40 for leaves)
   - Button components for upload, download, and share actions (primary style for CTAs)
   - Label components paired with all form inputs
   - Dialog for image upload with drag-drop zone
@@ -103,6 +104,7 @@ Animations should feel magical and celebratory without overwhelming the card con
 - **States**: 
   - Inputs: Focus state with gold ring, filled state with subtle background
   - Switches: Active shows gold accent, disabled is muted
+  - Sliders: Smooth thumb animation, track fills to current value position, shows current value inline
   - Buttons: Hover lifts with shadow, active presses down, disabled is 50% opacity
   - Upload zone: Hover shows border pulse, dragging-over shows gold highlight
   
