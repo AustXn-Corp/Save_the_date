@@ -6,7 +6,8 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Download, Share } from '@phosphor-icons/react'
 import { toast } from 'sonner'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
+import html2canvas from 'html2canvas'
 
 interface CardData {
   imageUrl: string | null
@@ -32,6 +33,7 @@ function App() {
   })
 
   const cardRef = useRef<HTMLDivElement>(null)
+  const [isGenerating, setIsGenerating] = useState(false)
 
   const data = cardData || {
     imageUrl: null,
@@ -61,40 +63,85 @@ function App() {
   }
 
   const handleDownload = async () => {
-    if (!data.imageUrl) {
-      toast.error('Please upload an image first')
+    if (!cardRef.current) {
+      toast.error('Card not found')
       return
     }
 
+    setIsGenerating(true)
     try {
-      const link = document.createElement('a')
-      link.href = data.imageUrl
-      link.download = 'save-the-date.png'
-      link.click()
-      toast.success('Card downloaded!')
+      const canvas = await html2canvas(cardRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+      })
+
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.href = url
+          link.download = 'save-the-date.png'
+          link.click()
+          URL.revokeObjectURL(url)
+          toast.success('Card downloaded!')
+        }
+      }, 'image/png')
     } catch (error) {
       toast.error('Failed to download card')
+    } finally {
+      setIsGenerating(false)
     }
   }
 
   const handleShare = async () => {
-    if (!data.imageUrl) {
-      toast.error('Please upload an image first')
+    if (!cardRef.current) {
+      toast.error('Card not found')
       return
     }
 
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Save The Date',
-          text: `${data.name1} & ${data.name2} - ${data.date}`,
-        })
-        toast.success('Shared successfully!')
-      } catch (error) {
-        toast.info('Share cancelled')
-      }
-    } else {
-      toast.info('Sharing not supported on this device')
+    setIsGenerating(true)
+    try {
+      const canvas = await html2canvas(cardRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+      })
+
+      canvas.toBlob(async (blob) => {
+        if (blob) {
+          const file = new File([blob], 'save-the-date.png', { type: 'image/png' })
+          
+          if (navigator.share && navigator.canShare?.({ files: [file] })) {
+            try {
+              await navigator.share({
+                title: 'Save The Date',
+                text: `${data.name1 || 'First Name'} & ${data.name2 || 'Second Name'} - ${data.date || 'Our Special Day'}`,
+                files: [file],
+              })
+              toast.success('Shared successfully!')
+            } catch (error: any) {
+              if (error.name !== 'AbortError') {
+                toast.error('Failed to share')
+              }
+            }
+          } else {
+            const url = URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = url
+            link.download = 'save-the-date.png'
+            link.click()
+            URL.revokeObjectURL(url)
+            toast.info('Downloaded instead - sharing not supported on this device')
+          }
+        }
+      }, 'image/png')
+    } catch (error) {
+      toast.error('Failed to generate card image')
+    } finally {
+      setIsGenerating(false)
     }
   }
 
@@ -126,16 +173,16 @@ function App() {
             <div className="flex gap-3 mt-6">
               <Button
                 onClick={handleDownload}
-                disabled={!data.imageUrl}
+                disabled={isGenerating}
                 className="flex-1 font-body"
                 size="lg"
               >
                 <Download className="mr-2" />
-                Download
+                {isGenerating ? 'Generating...' : 'Download'}
               </Button>
               <Button
                 onClick={handleShare}
-                disabled={!data.imageUrl}
+                disabled={isGenerating}
                 variant="outline"
                 className="flex-1 font-body"
                 size="lg"
