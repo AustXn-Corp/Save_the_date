@@ -71,24 +71,33 @@ function App() {
     setIsGenerating(true)
     try {
       const canvas = await html2canvas(cardRef.current, {
-        scale: 2,
+        scale: 3,
         useCORS: true,
-        allowTaint: false,
-        backgroundColor: '#000000',
+        allowTaint: true,
+        backgroundColor: null,
         logging: false,
-        width: cardRef.current.offsetWidth,
-        height: cardRef.current.offsetHeight,
-        windowWidth: cardRef.current.offsetWidth,
-        windowHeight: cardRef.current.offsetHeight,
+        imageTimeout: 0,
         onclone: (clonedDoc) => {
           const clonedCard = clonedDoc.querySelector('[data-card-root]') as HTMLElement
           if (clonedCard) {
             clonedCard.style.transform = 'none'
-            clonedCard.style.animation = 'none'
-            const animatedElements = clonedCard.querySelectorAll('[style*="transform"]')
-            animatedElements.forEach((el) => {
-              (el as HTMLElement).style.transform = 'none'
-              ;(el as HTMLElement).style.animation = 'none'
+            clonedCard.style.boxShadow = 'none'
+            
+            const allElements = clonedCard.querySelectorAll('*')
+            allElements.forEach((el) => {
+              const htmlEl = el as HTMLElement
+              htmlEl.style.animation = 'none'
+              htmlEl.style.transition = 'none'
+            })
+            
+            const motionDivs = clonedCard.querySelectorAll('div[style*="opacity"]')
+            motionDivs.forEach((el) => {
+              const htmlEl = el as HTMLElement
+              if (htmlEl.textContent?.includes('🍃')) {
+                htmlEl.style.opacity = '0.4'
+              } else {
+                htmlEl.style.opacity = '1'
+              }
             })
           }
         },
@@ -99,7 +108,7 @@ function App() {
           const url = URL.createObjectURL(blob)
           const link = document.createElement('a')
           link.href = url
-          link.download = 'save-the-date.png'
+          link.download = `save-the-date-${Date.now()}.png`
           document.body.appendChild(link)
           link.click()
           document.body.removeChild(link)
@@ -108,7 +117,7 @@ function App() {
         } else {
           toast.error('Failed to create image')
         }
-      }, 'image/png')
+      }, 'image/png', 0.95)
     } catch (error) {
       console.error('Download error:', error)
       toast.error('Failed to download card. Please try again.')
@@ -126,24 +135,33 @@ function App() {
     setIsGenerating(true)
     try {
       const canvas = await html2canvas(cardRef.current, {
-        scale: 2,
+        scale: 3,
         useCORS: true,
-        allowTaint: false,
-        backgroundColor: '#000000',
+        allowTaint: true,
+        backgroundColor: null,
         logging: false,
-        width: cardRef.current.offsetWidth,
-        height: cardRef.current.offsetHeight,
-        windowWidth: cardRef.current.offsetWidth,
-        windowHeight: cardRef.current.offsetHeight,
+        imageTimeout: 0,
         onclone: (clonedDoc) => {
           const clonedCard = clonedDoc.querySelector('[data-card-root]') as HTMLElement
           if (clonedCard) {
             clonedCard.style.transform = 'none'
-            clonedCard.style.animation = 'none'
-            const animatedElements = clonedCard.querySelectorAll('[style*="transform"]')
-            animatedElements.forEach((el) => {
-              (el as HTMLElement).style.transform = 'none'
-              ;(el as HTMLElement).style.animation = 'none'
+            clonedCard.style.boxShadow = 'none'
+            
+            const allElements = clonedCard.querySelectorAll('*')
+            allElements.forEach((el) => {
+              const htmlEl = el as HTMLElement
+              htmlEl.style.animation = 'none'
+              htmlEl.style.transition = 'none'
+            })
+            
+            const motionDivs = clonedCard.querySelectorAll('div[style*="opacity"]')
+            motionDivs.forEach((el) => {
+              const htmlEl = el as HTMLElement
+              if (htmlEl.textContent?.includes('🍃')) {
+                htmlEl.style.opacity = '0.4'
+              } else {
+                htmlEl.style.opacity = '1'
+              }
             })
           }
         },
@@ -156,11 +174,11 @@ function App() {
           return
         }
 
-        const file = new File([blob], 'save-the-date.png', { type: 'image/png' })
+        const file = new File([blob], `save-the-date-${Date.now()}.png`, { type: 'image/png' })
         
         if (navigator.share) {
           try {
-            if (navigator.canShare?.({ files: [file] })) {
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
               await navigator.share({
                 title: 'Save The Date',
                 text: `${data.name1 || 'First Name'} & ${data.name2 || 'Second Name'} - ${data.date || 'Our Special Day'}`,
@@ -182,7 +200,7 @@ function App() {
               const url = URL.createObjectURL(blob)
               const link = document.createElement('a')
               link.href = url
-              link.download = 'save-the-date.png'
+              link.download = `save-the-date-${Date.now()}.png`
               document.body.appendChild(link)
               link.click()
               document.body.removeChild(link)
@@ -194,7 +212,7 @@ function App() {
           const url = URL.createObjectURL(blob)
           const link = document.createElement('a')
           link.href = url
-          link.download = 'save-the-date.png'
+          link.download = `save-the-date-${Date.now()}.png`
           document.body.appendChild(link)
           link.click()
           document.body.removeChild(link)
@@ -202,7 +220,7 @@ function App() {
           toast.info('Downloaded - sharing not supported on this device')
         }
         setIsGenerating(false)
-      }, 'image/png')
+      }, 'image/png', 0.95)
     } catch (error) {
       console.error('Share error:', error)
       toast.error('Failed to generate card image. Please try again.')
