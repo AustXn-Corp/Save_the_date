@@ -33,6 +33,13 @@ A digital save the date card creator that allows users to design and customize e
 - **Progression**: Click toggle → Animation starts/stops immediately → Visual feedback shows active state → Adjust density slider → See particle count update in real-time
 - **Success criteria**: Animations run smoothly at 60fps, sparkles twinkle and drift, leaves flow naturally across the card, density controls respond instantly and affect both live preview and exported image
 
+### Text Color Customization
+- **Functionality**: Color picker with preset colors (white, black, cream, ivory, rose gold, navy, forest, burgundy) and custom color input for text
+- **Purpose**: Allow users to adjust text color for optimal contrast and readability against different background images
+- **Trigger**: User clicks preset color buttons or enters custom hex value/uses color picker
+- **Progression**: View current text color → Select preset or use color picker → See text color update instantly on card preview → Fine-tune with custom hex if needed
+- **Success criteria**: Text color changes apply immediately to all text elements (names, date, location, message), sufficient contrast is maintained for readability, color persists in downloaded/shared files
+
 ### Download/Share
 - **Functionality**: Export the finished card as an animated video (MP4) or animated GIF with all animations included, and share via native OS share sheet (AirDrop, Messages, Email, etc.)
 - **Purpose**: Allow users to distribute their animated save the date to guests via text, email, AirDrop, or social media on any device
@@ -43,7 +50,7 @@ A digital save the date card creator that allows users to design and customize e
 ## Edge Case Handling
 - **No Image Uploaded**: Show elegant placeholder with upload prompt, disable download until image is added
 - **Very Long Text**: Automatically scale down font size or truncate with ellipsis to maintain card layout
-- **Low Contrast**: Provide text shadow/overlay options to ensure readability against any background image
+- **Low Contrast**: Text color picker allows users to manually adjust text color for better contrast against any background image
 - **Mobile Upload**: Support both camera capture and gallery selection on mobile devices
 - **Slow Animation Performance**: Reduce particle count or disable animations on lower-powered devices
 
@@ -95,6 +102,7 @@ Animations should feel magical and celebratory without overwhelming the card con
   - Label components paired with all form inputs
   - Dialog for image upload with drag-drop zone
   - Badge for showing active animation states
+  - Color picker with preset buttons and native HTML color input for text color customization
   
 - **Customizations**: 
   - Custom overlay component with gradient for text readability on photo backgrounds
@@ -109,7 +117,7 @@ Animations should feel magical and celebratory without overwhelming the card con
   - Upload zone: Hover shows border pulse, dragging-over shows gold highlight
   
 - **Icon Selection**: 
-  - Phosphor Icons: UploadSimple (upload), Sparkle (sparkles toggle), Leaf (leaves toggle), Download (export), Share (sharing)
+  - Phosphor Icons: UploadSimple (upload), Sparkle (sparkles toggle), Leaf (leaves toggle), Download (export), Share (sharing), Palette (text color picker)
   
 - **Spacing**: 
   - Card padding: p-8 (32px) for comfortable breathing room

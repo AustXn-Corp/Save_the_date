@@ -22,6 +22,7 @@ interface CardData {
   showLeaves: boolean
   sparklesDensity: number
   leavesDensity: number
+  textColor: string
 }
 
 function App() {
@@ -36,6 +37,7 @@ function App() {
     showLeaves: true,
     sparklesDensity: 25,
     leavesDensity: 20,
+    textColor: '#FFFFFF',
   })
 
   const cardRef = useRef<HTMLDivElement>(null)
@@ -54,11 +56,12 @@ function App() {
     showLeaves: true,
     sparklesDensity: 25,
     leavesDensity: 20,
+    textColor: '#FFFFFF',
   }
 
   const updateCardData = (updates: Partial<CardData>) => {
     setCardData((current) => {
-      const base = current || {
+      const base: CardData = current || {
         imageUrl: null,
         name1: '',
         name2: '',
@@ -69,6 +72,7 @@ function App() {
         showLeaves: true,
         sparklesDensity: 25,
         leavesDensity: 20,
+        textColor: '#FFFFFF',
       }
       return { ...base, ...updates }
     })
@@ -233,7 +237,7 @@ function App() {
 
       const drawText = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
         ctx.textAlign = 'center'
-        ctx.fillStyle = '#FFFFFF'
+        ctx.fillStyle = data.textColor || '#FFFFFF'
         
         ctx.font = '400 24px Inter, sans-serif'
         ctx.fillText('SAVE THE DATE', width / 2, height / 2 - 280)
@@ -530,6 +534,7 @@ function App() {
               showLeaves={data.showLeaves}
               sparklesDensity={data.sparklesDensity}
               leavesDensity={data.leavesDensity}
+              textColor={data.textColor}
             />
             
             <div className="mt-6 space-y-4">
@@ -605,6 +610,7 @@ function App() {
                 showLeaves={data.showLeaves}
                 sparklesDensity={data.sparklesDensity}
                 leavesDensity={data.leavesDensity}
+                textColor={data.textColor}
                 onName1Change={(value) => updateCardData({ name1: value })}
                 onName2Change={(value) => updateCardData({ name2: value })}
                 onDateChange={(value) => updateCardData({ date: value })}
@@ -614,6 +620,7 @@ function App() {
                 onLeavesToggle={(value) => updateCardData({ showLeaves: value })}
                 onSparklesDensityChange={(value) => updateCardData({ sparklesDensity: value })}
                 onLeavesDensityChange={(value) => updateCardData({ leavesDensity: value })}
+                onTextColorChange={(value) => updateCardData({ textColor: value })}
               />
             </div>
           </Card>

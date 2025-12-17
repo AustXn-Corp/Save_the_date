@@ -3,8 +3,9 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
-import { Sparkle, Leaf } from '@phosphor-icons/react'
+import { Sparkle, Leaf, Palette } from '@phosphor-icons/react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 
 interface EditorPanelProps {
   name1: string
@@ -16,6 +17,7 @@ interface EditorPanelProps {
   showLeaves: boolean
   sparklesDensity: number
   leavesDensity: number
+  textColor: string
   onName1Change: (value: string) => void
   onName2Change: (value: string) => void
   onDateChange: (value: string) => void
@@ -25,6 +27,7 @@ interface EditorPanelProps {
   onLeavesToggle: (value: boolean) => void
   onSparklesDensityChange: (value: number) => void
   onLeavesDensityChange: (value: number) => void
+  onTextColorChange: (value: string) => void
 }
 
 export function EditorPanel({
@@ -37,6 +40,7 @@ export function EditorPanel({
   showLeaves,
   sparklesDensity,
   leavesDensity,
+  textColor,
   onName1Change,
   onName2Change,
   onDateChange,
@@ -46,7 +50,19 @@ export function EditorPanel({
   onLeavesToggle,
   onSparklesDensityChange,
   onLeavesDensityChange,
+  onTextColorChange,
 }: EditorPanelProps) {
+  const presetColors = [
+    { name: 'White', value: '#FFFFFF' },
+    { name: 'Black', value: '#000000' },
+    { name: 'Cream', value: '#FFF8E7' },
+    { name: 'Ivory', value: '#FFFFF0' },
+    { name: 'Rose Gold', value: '#ECC5C0' },
+    { name: 'Navy', value: '#1A237E' },
+    { name: 'Forest', value: '#1B5E20' },
+    { name: 'Burgundy', value: '#6D1D2E' },
+  ]
+
   return (
     <div className="space-y-6">
       <div className="space-y-4">
@@ -116,6 +132,66 @@ export function EditorPanel({
             className="font-body resize-none"
             rows={3}
           />
+        </div>
+      </div>
+
+      <div className="space-y-4 pt-6 border-t border-border">
+        <div className="flex items-center gap-2 mb-2">
+          <Palette size={20} className="text-primary" weight="duotone" />
+          <h3 className="font-heading text-lg font-semibold">Text Color</h3>
+        </div>
+        
+        <div className="space-y-4">
+          <div className="space-y-3">
+            <Label className="font-body text-sm text-muted-foreground">
+              Preset Colors
+            </Label>
+            <div className="grid grid-cols-4 gap-2">
+              {presetColors.map((preset) => (
+                <Button
+                  key={preset.value}
+                  variant={textColor === preset.value ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => onTextColorChange(preset.value)}
+                  className="h-12 flex flex-col items-center justify-center gap-1 p-2"
+                >
+                  <div
+                    className="w-6 h-6 rounded-full border-2 border-border shadow-sm"
+                    style={{ backgroundColor: preset.value }}
+                  />
+                  <span className="text-[10px] leading-none">{preset.name}</span>
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <Label htmlFor="custom-color" className="font-body text-sm text-muted-foreground">
+              Custom Color
+            </Label>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Input
+                  id="custom-color"
+                  type="text"
+                  value={textColor}
+                  onChange={(e) => onTextColorChange(e.target.value)}
+                  placeholder="#FFFFFF"
+                  className="font-mono text-sm pr-12"
+                />
+                <div
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded border-2 border-border shadow-sm"
+                  style={{ backgroundColor: textColor }}
+                />
+              </div>
+              <Input
+                type="color"
+                value={textColor}
+                onChange={(e) => onTextColorChange(e.target.value)}
+                className="w-16 h-auto p-1 cursor-pointer"
+              />
+            </div>
+          </div>
         </div>
       </div>
 

@@ -12,6 +12,7 @@ interface SaveTheDateCardProps {
   showLeaves: boolean
   sparklesDensity: number
   leavesDensity: number
+  textColor: string
 }
 
 export function SaveTheDateCard({
@@ -25,6 +26,7 @@ export function SaveTheDateCard({
   showLeaves,
   sparklesDensity,
   leavesDensity,
+  textColor,
 }: SaveTheDateCardProps) {
   return (
     <div data-card-root className="relative w-full aspect-[3/4] rounded-xl overflow-hidden shadow-2xl bg-black">
@@ -44,7 +46,7 @@ export function SaveTheDateCard({
       {showSparkles && <Sparkles count={sparklesDensity} />}
       {showLeaves && <Leaves count={leavesDensity} />}
 
-      <div className="relative h-full flex flex-col items-center justify-center p-8 text-center text-white">
+      <div className="relative h-full flex flex-col items-center justify-center p-8 text-center" style={{ color: textColor }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
