@@ -1,7 +1,9 @@
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import { useEffect, useState } from 'react'
 
 export type FrameStyle = 'none' | 'elegant' | 'floral' | 'geometric' | 'vintage' | 'minimal' | 'ornate'
+export type RsvpDisplayMode = 'none' | 'link' | 'qr' | 'both'
 
 interface SaveTheDateCardProps {
   imageUrl: string | null
@@ -19,6 +21,9 @@ interface SaveTheDateCardProps {
   frameStyle: FrameStyle
   frameColor: string
   frameThickness: number
+  rsvpUrl: string
+  rsvpDisplayMode: RsvpDisplayMode
+  rsvpLabel: string
 }
 
 export function SaveTheDateCard({
@@ -37,10 +42,26 @@ export function SaveTheDateCard({
   frameStyle,
   frameColor,
   frameThickness,
+  rsvpUrl,
+  rsvpDisplayMode,
+  rsvpLabel,
 }: SaveTheDateCardProps) {
   const textShadowStyle = showTextShadow 
     ? { textShadow: '0 2px 8px rgba(0, 0, 0, 0.7), 0 4px 16px rgba(0, 0, 0, 0.5)' }
     : {}
+
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (rsvpUrl && (rsvpDisplayMode === 'qr' || rsvpDisplayMode === 'both')) {
+      generateQRCode(rsvpUrl).then(setQrDataUrl)
+    } else {
+      setQrDataUrl(null)
+    }
+  }, [rsvpUrl, rsvpDisplayMode])
+
+  const showQr = rsvpDisplayMode === 'qr' || rsvpDisplayMode === 'both'
+  const showLink = rsvpDisplayMode === 'link' || rsvpDisplayMode === 'both'
 
   return (
     <div data-card-root className="relative w-full aspect-[3/4] rounded-xl overflow-hidden shadow-2xl bg-black">
@@ -99,11 +120,116 @@ export function SaveTheDateCard({
               {message}
             </p>
           )}
+
+          {rsvpUrl && rsvpDisplayMode !== 'none' && (
+            <div className="mt-6 flex flex-col items-center gap-3">
+              {showQr && qrDataUrl && (
+                <div className="bg-white p-2 rounded-lg shadow-lg">
+                  <img src={qrDataUrl} alt="RSVP QR Code" className="w-20 h-20 md:w-24 md:h-24" />
+                </div>
+              )}
+              {showLink && (
+                <p className="font-body text-sm opacity-90">
+                  {rsvpLabel || 'RSVP'}: <span className="underline">{formatDisplayUrl(rsvpUrl)}</span>
+                </p>
+              )}
+            </div>
+          )}
         </motion.div>
       </div>
     </div>
   )
 }
+
+function formatDisplayUrl(url: string): string {
+  try {
+    const parsed = new URL(url)
+    let display = parsed.hostname + parsed.pathname
+    if (display.endsWith('/')) display = display.slice(0, -1)
+    if (display.length > 30) display = display.slice(0, 27) + '...'
+    return display
+  } catch {
+    if (url.length > 30) return url.slice(0, 27) + '...'
+    return url
+  }
+}
+
+async function generateQRCode(text: string): Promise<string> {
+  const size = 200
+  const modules = generateQRMatrix(text)
+  const moduleCount = modules.length
+  const moduleSize = Math.floor(size / moduleCount)
+  const offset = Math.floor((size - moduleSize * moduleCount) / 2)
+
+  const canvas = document.createElement('canvas')
+  canvas.width = size
+  canvas.height = size
+  const ctx = canvas.getContext('2d')!
+  
+  ctx.fillStyle = '#FFFFFF'
+  ctx.fillRect(0, 0, size, size)
+  
+  ctx.fillStyle = '#000000'
+  for (let row = 0; row < moduleCount; row++) {
+    for (let col = 0; col < moduleCount; col++) {
+      if (modules[row][col]) {
+        ctx.fillRect(
+          offset + col * moduleSize,
+          offset + row * moduleSize,
+          moduleSize,
+          moduleSize
+        )
+      }
+    }
+  }
+  
+  return canvas.toDataURL('image/png')
+}
+
+function generateQRMatrix(text: string): boolean[][] {
+  const size = 21
+  const matrix: boolean[][] = Array(size).fill(null).map(() => Array(size).fill(false))
+  
+  for (let i = 0; i < 7; i++) {
+    for (let j = 0; j < 7; j++) {
+      const isBlack = (i === 0 || i === 6 || j === 0 || j === 6) || (i >= 2 && i <= 4 && j >= 2 && j <= 4)
+      matrix[i][j] = isBlack
+      matrix[i][size - 7 + j] = isBlack
+      matrix[size - 7 + i][j] = isBlack
+    }
+  }
+  
+  for (let i = 0; i < size; i++) {
+    matrix[6][i] = i % 2 === 0
+    matrix[i][6] = i % 2 === 0
+  }
+  
+  let dataIndex = 0
+  const data = text.split('').map(c => c.charCodeAt(0))
+  
+  for (let col = size - 1; col >= 0; col -= 2) {
+    if (col === 6) col = 5
+    for (let row = 0; row < size; row++) {
+      for (let c = 0; c < 2; c++) {
+        const currentCol = col - c
+        if (matrix[row][currentCol] === false) {
+          if (dataIndex < data.length * 8) {
+            const byteIndex = Math.floor(dataIndex / 8)
+            const bitIndex = 7 - (dataIndex % 8)
+            if (byteIndex < data.length) {
+              matrix[row][currentCol] = ((data[byteIndex] >> bitIndex) & 1) === 1
+            }
+            dataIndex++
+          }
+        }
+      }
+    }
+  }
+  
+  return matrix
+}
+
+export { generateQRCode }
 
 function Sparkles({ count }: { count: number }) {
   const sparkles = Array.from({ length: count })

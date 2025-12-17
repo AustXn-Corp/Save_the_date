@@ -3,11 +3,11 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
-import { Sparkle, Leaf, Palette, TextAa, FrameCorners } from '@phosphor-icons/react'
+import { Sparkle, Leaf, Palette, TextAa, FrameCorners, QrCode } from '@phosphor-icons/react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import type { FrameStyle } from './SaveTheDateCard'
+import type { FrameStyle, RsvpDisplayMode } from './SaveTheDateCard'
 
 interface EditorPanelProps {
   name1: string
@@ -24,6 +24,9 @@ interface EditorPanelProps {
   frameStyle: FrameStyle
   frameColor: string
   frameThickness: number
+  rsvpUrl: string
+  rsvpDisplayMode: RsvpDisplayMode
+  rsvpLabel: string
   onName1Change: (value: string) => void
   onName2Change: (value: string) => void
   onDateChange: (value: string) => void
@@ -38,6 +41,9 @@ interface EditorPanelProps {
   onFrameStyleChange: (value: FrameStyle) => void
   onFrameColorChange: (value: string) => void
   onFrameThicknessChange: (value: number) => void
+  onRsvpUrlChange: (value: string) => void
+  onRsvpDisplayModeChange: (value: RsvpDisplayMode) => void
+  onRsvpLabelChange: (value: string) => void
 }
 
 export function EditorPanel({
@@ -55,6 +61,9 @@ export function EditorPanel({
   frameStyle,
   frameColor,
   frameThickness,
+  rsvpUrl,
+  rsvpDisplayMode,
+  rsvpLabel,
   onName1Change,
   onName2Change,
   onDateChange,
@@ -69,6 +78,9 @@ export function EditorPanel({
   onFrameStyleChange,
   onFrameColorChange,
   onFrameThicknessChange,
+  onRsvpUrlChange,
+  onRsvpDisplayModeChange,
+  onRsvpLabelChange,
 }: EditorPanelProps) {
   const presetColors = [
     { name: 'White', value: '#FFFFFF' },
@@ -439,6 +451,91 @@ export function EditorPanel({
                 className="w-full"
               />
             </div>
+          )}
+        </div>
+      </div>
+
+      <div className="space-y-4 pt-6 border-t border-border">
+        <div className="flex items-center gap-2 mb-2">
+          <QrCode size={20} className="text-primary" weight="duotone" />
+          <h3 className="font-heading text-lg font-semibold">RSVP Options</h3>
+        </div>
+
+        <div className="space-y-4">
+          <div className="space-y-3">
+            <Label htmlFor="rsvp-url" className="font-body text-sm text-muted-foreground">
+              RSVP Link URL
+            </Label>
+            <Input
+              id="rsvp-url"
+              type="url"
+              value={rsvpUrl}
+              onChange={(e) => onRsvpUrlChange(e.target.value)}
+              placeholder="https://your-rsvp-link.com"
+              className="font-body"
+            />
+            <p className="text-xs text-muted-foreground">
+              Enter your RSVP website, Google Form, or any URL where guests can respond
+            </p>
+          </div>
+
+          {rsvpUrl && (
+            <>
+              <div className="space-y-3">
+                <Label htmlFor="rsvp-display" className="font-body text-sm text-muted-foreground">
+                  Display Mode
+                </Label>
+                <Select value={rsvpDisplayMode} onValueChange={(v) => onRsvpDisplayModeChange(v as RsvpDisplayMode)}>
+                  <SelectTrigger id="rsvp-display" className="w-full">
+                    <SelectValue placeholder="Select display mode" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">
+                      <div className="flex flex-col items-start">
+                        <span className="font-medium">Hidden</span>
+                        <span className="text-xs text-muted-foreground">Don't show on card</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="link">
+                      <div className="flex flex-col items-start">
+                        <span className="font-medium">Link Only</span>
+                        <span className="text-xs text-muted-foreground">Show text link</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="qr">
+                      <div className="flex flex-col items-start">
+                        <span className="font-medium">QR Code Only</span>
+                        <span className="text-xs text-muted-foreground">Show scannable QR code</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="both">
+                      <div className="flex flex-col items-start">
+                        <span className="font-medium">QR Code & Link</span>
+                        <span className="text-xs text-muted-foreground">Show both for maximum accessibility</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {rsvpDisplayMode !== 'none' && (
+                <div className="space-y-3">
+                  <Label htmlFor="rsvp-label" className="font-body text-sm text-muted-foreground">
+                    Label Text
+                  </Label>
+                  <Input
+                    id="rsvp-label"
+                    value={rsvpLabel}
+                    onChange={(e) => onRsvpLabelChange(e.target.value)}
+                    placeholder="RSVP"
+                    className="font-body"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Customize the text shown with the link (e.g., "RSVP", "More Details", "Join Us")
+                  </p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

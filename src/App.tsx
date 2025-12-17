@@ -1,5 +1,5 @@
 import { useKV } from '@github/spark/hooks'
-import { SaveTheDateCard, type FrameStyle } from '@/components/SaveTheDateCard'
+import { SaveTheDateCard, type FrameStyle, type RsvpDisplayMode } from '@/components/SaveTheDateCard'
 import { ImageUpload } from '@/components/ImageUpload'
 import { EditorPanel } from '@/components/EditorPanel'
 import { Card } from '@/components/ui/card'
@@ -27,6 +27,9 @@ interface CardData {
   frameStyle: FrameStyle
   frameColor: string
   frameThickness: number
+  rsvpUrl: string
+  rsvpDisplayMode: RsvpDisplayMode
+  rsvpLabel: string
 }
 
 function App() {
@@ -46,6 +49,9 @@ function App() {
     frameStyle: 'none',
     frameColor: '#D4AF37',
     frameThickness: 100,
+    rsvpUrl: '',
+    rsvpDisplayMode: 'none',
+    rsvpLabel: 'RSVP',
   })
 
   const cardRef = useRef<HTMLDivElement>(null)
@@ -69,6 +75,9 @@ function App() {
     frameStyle: 'none' as FrameStyle,
     frameColor: '#D4AF37',
     frameThickness: 100,
+    rsvpUrl: '',
+    rsvpDisplayMode: 'none' as RsvpDisplayMode,
+    rsvpLabel: 'RSVP',
   }
 
   const updateCardData = (updates: Partial<CardData>) => {
@@ -89,6 +98,9 @@ function App() {
         frameStyle: 'none',
         frameColor: '#D4AF37',
         frameThickness: 100,
+        rsvpUrl: '',
+        rsvpDisplayMode: 'none',
+        rsvpLabel: 'RSVP',
       }
       return { ...base, ...updates }
     })
@@ -183,6 +195,7 @@ function App() {
 
         drawFrameDecoration(ctx, width, height, data.frameStyle, data.frameColor, data.frameThickness)
         drawText(ctx, width, height)
+        await drawRsvp(ctx, width, height)
       }
 
       const drawFrameDecoration = (ctx: CanvasRenderingContext2D, width: number, height: number, style: FrameStyle, color: string, thickness: number = 100) => {
@@ -542,6 +555,148 @@ function App() {
         }
       }
 
+      const drawRsvp = async (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+        if (!data.rsvpUrl || data.rsvpDisplayMode === 'none') return
+
+        const showQr = data.rsvpDisplayMode === 'qr' || data.rsvpDisplayMode === 'both'
+        const showLink = data.rsvpDisplayMode === 'link' || data.rsvpDisplayMode === 'both'
+        
+        let currentY = height / 2 + 460
+        
+        ctx.fillStyle = data.textColor || '#FFFFFF'
+        
+        if (data.showTextShadow) {
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.7)'
+          ctx.shadowBlur = 16
+          ctx.shadowOffsetX = 0
+          ctx.shadowOffsetY = 4
+        }
+
+        if (showQr) {
+          const qrSize = 140
+          const qrX = width / 2 - qrSize / 2
+          const qrY = currentY
+          
+          ctx.save()
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.4)'
+          ctx.shadowBlur = 12
+          ctx.shadowOffsetX = 0
+          ctx.shadowOffsetY = 4
+          
+          ctx.fillStyle = '#FFFFFF'
+          ctx.beginPath()
+          ctx.roundRect(qrX - 10, qrY - 10, qrSize + 20, qrSize + 20, 8)
+          ctx.fill()
+          ctx.restore()
+          
+          drawQRCodeToCanvas(ctx, data.rsvpUrl, qrX, qrY, qrSize)
+          
+          currentY += qrSize + 30
+        }
+        
+        if (showLink) {
+          ctx.fillStyle = data.textColor || '#FFFFFF'
+          if (data.showTextShadow) {
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.7)'
+            ctx.shadowBlur = 16
+            ctx.shadowOffsetX = 0
+            ctx.shadowOffsetY = 4
+          }
+          ctx.textAlign = 'center'
+          ctx.font = '400 28px Inter, sans-serif'
+          ctx.globalAlpha = 0.9
+          
+          const displayUrl = formatUrlForDisplay(data.rsvpUrl)
+          const label = data.rsvpLabel || 'RSVP'
+          ctx.fillText(`${label}: ${displayUrl}`, width / 2, currentY)
+          ctx.globalAlpha = 1
+        }
+        
+        if (data.showTextShadow) {
+          ctx.shadowColor = 'transparent'
+          ctx.shadowBlur = 0
+          ctx.shadowOffsetX = 0
+          ctx.shadowOffsetY = 0
+        }
+      }
+
+      const formatUrlForDisplay = (url: string): string => {
+        try {
+          const parsed = new URL(url)
+          let display = parsed.hostname + parsed.pathname
+          if (display.endsWith('/')) display = display.slice(0, -1)
+          if (display.length > 35) display = display.slice(0, 32) + '...'
+          return display
+        } catch {
+          if (url.length > 35) return url.slice(0, 32) + '...'
+          return url
+        }
+      }
+
+      const drawQRCodeToCanvas = (ctx: CanvasRenderingContext2D, text: string, x: number, y: number, size: number) => {
+        const modules = generateQRMatrixForExport(text)
+        const moduleCount = modules.length
+        const moduleSize = Math.floor(size / moduleCount)
+        const offset = Math.floor((size - moduleSize * moduleCount) / 2)
+        
+        ctx.fillStyle = '#000000'
+        for (let row = 0; row < moduleCount; row++) {
+          for (let col = 0; col < moduleCount; col++) {
+            if (modules[row][col]) {
+              ctx.fillRect(
+                x + offset + col * moduleSize,
+                y + offset + row * moduleSize,
+                moduleSize,
+                moduleSize
+              )
+            }
+          }
+        }
+      }
+
+      const generateQRMatrixForExport = (text: string): boolean[][] => {
+        const size = 21
+        const matrix: boolean[][] = Array(size).fill(null).map(() => Array(size).fill(false))
+        
+        for (let i = 0; i < 7; i++) {
+          for (let j = 0; j < 7; j++) {
+            const isBlack = (i === 0 || i === 6 || j === 0 || j === 6) || (i >= 2 && i <= 4 && j >= 2 && j <= 4)
+            matrix[i][j] = isBlack
+            matrix[i][size - 7 + j] = isBlack
+            matrix[size - 7 + i][j] = isBlack
+          }
+        }
+        
+        for (let i = 0; i < size; i++) {
+          matrix[6][i] = i % 2 === 0
+          matrix[i][6] = i % 2 === 0
+        }
+        
+        let dataIndex = 0
+        const dataBytes = text.split('').map(c => c.charCodeAt(0))
+        
+        for (let col = size - 1; col >= 0; col -= 2) {
+          if (col === 6) col = 5
+          for (let row = 0; row < size; row++) {
+            for (let c = 0; c < 2; c++) {
+              const currentCol = col - c
+              if (matrix[row][currentCol] === false) {
+                if (dataIndex < dataBytes.length * 8) {
+                  const byteIndex = Math.floor(dataIndex / 8)
+                  const bitIndex = 7 - (dataIndex % 8)
+                  if (byteIndex < dataBytes.length) {
+                    matrix[row][currentCol] = ((dataBytes[byteIndex] >> bitIndex) & 1) === 1
+                  }
+                  dataIndex++
+                }
+              }
+            }
+          }
+        }
+        
+        return matrix
+      }
+
       const wrapText = (ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number) => {
         const words = text.split(' ')
         let line = ''
@@ -808,6 +963,9 @@ function App() {
               frameStyle={data.frameStyle}
               frameColor={data.frameColor}
               frameThickness={data.frameThickness}
+              rsvpUrl={data.rsvpUrl}
+              rsvpDisplayMode={data.rsvpDisplayMode}
+              rsvpLabel={data.rsvpLabel}
             />
             
             <div className="mt-6 space-y-4">
@@ -888,6 +1046,9 @@ function App() {
                 frameStyle={data.frameStyle}
                 frameColor={data.frameColor}
                 frameThickness={data.frameThickness}
+                rsvpUrl={data.rsvpUrl}
+                rsvpDisplayMode={data.rsvpDisplayMode}
+                rsvpLabel={data.rsvpLabel}
                 onName1Change={(value) => updateCardData({ name1: value })}
                 onName2Change={(value) => updateCardData({ name2: value })}
                 onDateChange={(value) => updateCardData({ date: value })}
@@ -902,6 +1063,9 @@ function App() {
                 onFrameStyleChange={(value) => updateCardData({ frameStyle: value })}
                 onFrameColorChange={(value) => updateCardData({ frameColor: value })}
                 onFrameThicknessChange={(value) => updateCardData({ frameThickness: value })}
+                onRsvpUrlChange={(value) => updateCardData({ rsvpUrl: value })}
+                onRsvpDisplayModeChange={(value) => updateCardData({ rsvpDisplayMode: value })}
+                onRsvpLabelChange={(value) => updateCardData({ rsvpLabel: value })}
               />
             </div>
           </Card>
