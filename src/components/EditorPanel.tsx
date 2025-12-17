@@ -3,11 +3,11 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
-import { Sparkle, Leaf, Palette, TextAa, FrameCorners, QrCode, ArrowsVertical } from '@phosphor-icons/react'
+import { Sparkle, Leaf, Palette, TextAa, FrameCorners, QrCode, ArrowsVertical, TextAlignLeft, TextAlignCenter, TextAlignRight } from '@phosphor-icons/react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import type { FrameStyle, RsvpDisplayMode } from './SaveTheDateCard'
+import type { FrameStyle, RsvpDisplayMode, TextAlignment } from './SaveTheDateCard'
 
 interface EditorPanelProps {
   name1: string
@@ -28,6 +28,7 @@ interface EditorPanelProps {
   rsvpDisplayMode: RsvpDisplayMode
   rsvpLabel: string
   textVerticalPosition: number
+  textAlignment: TextAlignment
   onName1Change: (value: string) => void
   onName2Change: (value: string) => void
   onDateChange: (value: string) => void
@@ -46,6 +47,7 @@ interface EditorPanelProps {
   onRsvpDisplayModeChange: (value: RsvpDisplayMode) => void
   onRsvpLabelChange: (value: string) => void
   onTextVerticalPositionChange: (value: number) => void
+  onTextAlignmentChange: (value: TextAlignment) => void
 }
 
 export function EditorPanel({
@@ -67,6 +69,7 @@ export function EditorPanel({
   rsvpDisplayMode,
   rsvpLabel,
   textVerticalPosition,
+  textAlignment,
   onName1Change,
   onName2Change,
   onDateChange,
@@ -85,6 +88,7 @@ export function EditorPanel({
   onRsvpDisplayModeChange,
   onRsvpLabelChange,
   onTextVerticalPositionChange,
+  onTextAlignmentChange,
 }: EditorPanelProps) {
   const presetColors = [
     { name: 'White', value: '#FFFFFF' },
@@ -293,6 +297,41 @@ export function EditorPanel({
               <p className="text-xs text-muted-foreground">
                 Adjust where the text appears vertically on the card (5% = top, 60% = lower)
               </p>
+            </div>
+
+            <div className="space-y-2 pt-3">
+              <Label className="font-body text-sm text-muted-foreground">
+                Horizontal Alignment
+              </Label>
+              <div className="flex gap-2">
+                <Button
+                  variant={textAlignment === 'left' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => onTextAlignmentChange('left')}
+                  className="flex-1 h-10"
+                >
+                  <TextAlignLeft size={18} className="mr-2" />
+                  Left
+                </Button>
+                <Button
+                  variant={textAlignment === 'center' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => onTextAlignmentChange('center')}
+                  className="flex-1 h-10"
+                >
+                  <TextAlignCenter size={18} className="mr-2" />
+                  Center
+                </Button>
+                <Button
+                  variant={textAlignment === 'right' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => onTextAlignmentChange('right')}
+                  className="flex-1 h-10"
+                >
+                  <TextAlignRight size={18} className="mr-2" />
+                  Right
+                </Button>
+              </div>
             </div>
           </div>
         </div>

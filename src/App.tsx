@@ -1,5 +1,5 @@
 import { useKV } from '@github/spark/hooks'
-import { SaveTheDateCard, type FrameStyle, type RsvpDisplayMode } from '@/components/SaveTheDateCard'
+import { SaveTheDateCard, type FrameStyle, type RsvpDisplayMode, type TextAlignment } from '@/components/SaveTheDateCard'
 import { ImageUpload } from '@/components/ImageUpload'
 import { EditorPanel } from '@/components/EditorPanel'
 import { Card } from '@/components/ui/card'
@@ -31,6 +31,7 @@ interface CardData {
   rsvpDisplayMode: RsvpDisplayMode
   rsvpLabel: string
   textVerticalPosition: number
+  textAlignment: TextAlignment
 }
 
 function App() {
@@ -54,6 +55,7 @@ function App() {
     rsvpDisplayMode: 'none',
     rsvpLabel: 'RSVP',
     textVerticalPosition: 25,
+    textAlignment: 'center',
   })
 
   const cardRef = useRef<HTMLDivElement>(null)
@@ -81,6 +83,7 @@ function App() {
     rsvpDisplayMode: 'none' as RsvpDisplayMode,
     rsvpLabel: 'RSVP',
     textVerticalPosition: 25,
+    textAlignment: 'center' as TextAlignment,
   }
 
   const updateCardData = (updates: Partial<CardData>) => {
@@ -105,6 +108,7 @@ function App() {
         rsvpDisplayMode: 'none',
         rsvpLabel: 'RSVP',
         textVerticalPosition: 25,
+        textAlignment: 'center',
       }
       return { ...base, ...updates }
     })
@@ -508,8 +512,11 @@ function App() {
       }
 
       const drawText = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
-        ctx.textAlign = 'center'
+        const alignment = data.textAlignment || 'center'
+        ctx.textAlign = alignment
         ctx.fillStyle = data.textColor || '#FFFFFF'
+        
+        const textX = alignment === 'left' ? 100 : alignment === 'right' ? width - 100 : width / 2
         
         if (data.showTextShadow) {
           ctx.shadowColor = 'rgba(0, 0, 0, 0.7)'
@@ -522,35 +529,35 @@ function App() {
         const baseY = (verticalPos / 100) * height
         
         ctx.font = '400 24px Inter, sans-serif'
-        ctx.fillText('SAVE THE DATE', width / 2, baseY)
+        ctx.fillText('SAVE THE DATE', textX, baseY)
         
         ctx.font = 'bold 120px "Playfair Display", serif'
-        ctx.fillText(data.name1 || 'First Name', width / 2, baseY + 140)
+        ctx.fillText(data.name1 || 'First Name', textX, baseY + 140)
         
         ctx.font = '400 60px "Playfair Display", serif'
         ctx.globalAlpha = 0.9
-        ctx.fillText('&', width / 2, baseY + 240)
+        ctx.fillText('&', textX, baseY + 240)
         ctx.globalAlpha = 1
         
         ctx.font = 'bold 120px "Playfair Display", serif'
-        ctx.fillText(data.name2 || 'Second Name', width / 2, baseY + 360)
+        ctx.fillText(data.name2 || 'Second Name', textX, baseY + 360)
         
         if (data.date) {
           ctx.font = '600 56px "Crimson Pro", serif'
-          ctx.fillText(data.date, width / 2, baseY + 480)
+          ctx.fillText(data.date, textX, baseY + 480)
         }
         
         if (data.location) {
           ctx.font = '400 36px Inter, sans-serif'
           ctx.globalAlpha = 0.9
-          wrapText(ctx, data.location, width / 2, baseY + 560, width - 200, 50)
+          wrapText(ctx, data.location, textX, baseY + 560, width - 200, 50)
           ctx.globalAlpha = 1
         }
         
         if (data.message) {
           ctx.font = 'italic 28px Inter, sans-serif'
           ctx.globalAlpha = 0.8
-          wrapText(ctx, data.message, width / 2, baseY + 640, width - 200, 40)
+          wrapText(ctx, data.message, textX, baseY + 640, width - 200, 40)
           ctx.globalAlpha = 1
         }
         
@@ -567,10 +574,13 @@ function App() {
 
         const showQr = data.rsvpDisplayMode === 'qr' || data.rsvpDisplayMode === 'both'
         const showLink = data.rsvpDisplayMode === 'link' || data.rsvpDisplayMode === 'both'
+        const alignment = data.textAlignment || 'center'
         
         const verticalPos = data.textVerticalPosition || 25
         const baseY = (verticalPos / 100) * height
         let currentY = baseY + 740
+        
+        const textX = alignment === 'left' ? 100 : alignment === 'right' ? width - 100 : width / 2
         
         ctx.fillStyle = data.textColor || '#FFFFFF'
         
@@ -583,7 +593,7 @@ function App() {
 
         if (showQr) {
           const qrSize = 140
-          const qrX = width / 2 - qrSize / 2
+          const qrX = alignment === 'left' ? 100 : alignment === 'right' ? width - 100 - qrSize : width / 2 - qrSize / 2
           const qrY = currentY
           
           ctx.save()
@@ -611,13 +621,13 @@ function App() {
             ctx.shadowOffsetX = 0
             ctx.shadowOffsetY = 4
           }
-          ctx.textAlign = 'center'
+          ctx.textAlign = alignment
           ctx.font = '400 28px Inter, sans-serif'
           ctx.globalAlpha = 0.9
           
           const displayUrl = formatUrlForDisplay(data.rsvpUrl)
           const label = data.rsvpLabel || 'RSVP'
-          ctx.fillText(`${label}: ${displayUrl}`, width / 2, currentY)
+          ctx.fillText(`${label}: ${displayUrl}`, textX, currentY)
           ctx.globalAlpha = 1
         }
         
@@ -976,6 +986,7 @@ function App() {
               rsvpDisplayMode={data.rsvpDisplayMode}
               rsvpLabel={data.rsvpLabel}
               textVerticalPosition={data.textVerticalPosition}
+              textAlignment={data.textAlignment || 'center'}
             />
             
             <div className="mt-6 space-y-4">
@@ -1060,6 +1071,7 @@ function App() {
                 rsvpDisplayMode={data.rsvpDisplayMode}
                 rsvpLabel={data.rsvpLabel}
                 textVerticalPosition={data.textVerticalPosition}
+                textAlignment={data.textAlignment || 'center'}
                 onName1Change={(value) => updateCardData({ name1: value })}
                 onName2Change={(value) => updateCardData({ name2: value })}
                 onDateChange={(value) => updateCardData({ date: value })}
@@ -1078,6 +1090,7 @@ function App() {
                 onRsvpDisplayModeChange={(value) => updateCardData({ rsvpDisplayMode: value })}
                 onRsvpLabelChange={(value) => updateCardData({ rsvpLabel: value })}
                 onTextVerticalPositionChange={(value) => updateCardData({ textVerticalPosition: value })}
+                onTextAlignmentChange={(value) => updateCardData({ textAlignment: value })}
               />
             </div>
           </Card>

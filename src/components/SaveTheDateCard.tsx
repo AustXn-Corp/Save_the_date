@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 
 export type FrameStyle = 'none' | 'elegant' | 'floral' | 'geometric' | 'vintage' | 'minimal' | 'ornate'
 export type RsvpDisplayMode = 'none' | 'link' | 'qr' | 'both'
+export type TextAlignment = 'left' | 'center' | 'right'
 
 interface SaveTheDateCardProps {
   imageUrl: string | null
@@ -25,6 +26,7 @@ interface SaveTheDateCardProps {
   rsvpDisplayMode: RsvpDisplayMode
   rsvpLabel: string
   textVerticalPosition: number
+  textAlignment: TextAlignment
 }
 
 export function SaveTheDateCard({
@@ -47,6 +49,7 @@ export function SaveTheDateCard({
   rsvpDisplayMode,
   rsvpLabel,
   textVerticalPosition,
+  textAlignment,
 }: SaveTheDateCardProps) {
   const textShadowStyle = showTextShadow 
     ? { textShadow: '0 2px 8px rgba(0, 0, 0, 0.7), 0 4px 16px rgba(0, 0, 0, 0.5)' }
@@ -64,6 +67,9 @@ export function SaveTheDateCard({
 
   const showQr = rsvpDisplayMode === 'qr' || rsvpDisplayMode === 'both'
   const showLink = rsvpDisplayMode === 'link' || rsvpDisplayMode === 'both'
+
+  const alignmentClass = textAlignment === 'left' ? 'items-start text-left' : textAlignment === 'right' ? 'items-end text-right' : 'items-center text-center'
+  const rsvpAlignmentClass = textAlignment === 'left' ? 'items-start' : textAlignment === 'right' ? 'items-end' : 'items-center'
 
   return (
     <div data-card-root className="relative w-full aspect-[3/4] rounded-xl overflow-hidden shadow-2xl bg-black">
@@ -86,7 +92,7 @@ export function SaveTheDateCard({
       <FrameDecoration style={frameStyle} color={frameColor} thickness={frameThickness} />
 
       <div 
-        className="relative h-full flex flex-col items-center p-8 text-center" 
+        className={cn("relative h-full flex flex-col p-8", alignmentClass)}
         style={{ 
           color: textColor, 
           ...textShadowStyle,
@@ -132,7 +138,7 @@ export function SaveTheDateCard({
           )}
 
           {rsvpUrl && rsvpDisplayMode !== 'none' && (
-            <div className="mt-6 flex flex-col items-center gap-3">
+            <div className={cn("mt-6 flex flex-col gap-3", rsvpAlignmentClass)}>
               {showQr && qrDataUrl && (
                 <div className="bg-white p-2 rounded-lg shadow-lg">
                   <img src={qrDataUrl} alt="RSVP QR Code" className="w-20 h-20 md:w-24 md:h-24" />
