@@ -3,9 +3,11 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
-import { Sparkle, Leaf, Palette, TextAa } from '@phosphor-icons/react'
+import { Sparkle, Leaf, Palette, TextAa, FrameCorners } from '@phosphor-icons/react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import type { FrameStyle } from './SaveTheDateCard'
 
 interface EditorPanelProps {
   name1: string
@@ -19,6 +21,8 @@ interface EditorPanelProps {
   leavesDensity: number
   textColor: string
   showTextShadow: boolean
+  frameStyle: FrameStyle
+  frameColor: string
   onName1Change: (value: string) => void
   onName2Change: (value: string) => void
   onDateChange: (value: string) => void
@@ -30,6 +34,8 @@ interface EditorPanelProps {
   onLeavesDensityChange: (value: number) => void
   onTextColorChange: (value: string) => void
   onTextShadowToggle: (value: boolean) => void
+  onFrameStyleChange: (value: FrameStyle) => void
+  onFrameColorChange: (value: string) => void
 }
 
 export function EditorPanel({
@@ -44,6 +50,8 @@ export function EditorPanel({
   leavesDensity,
   textColor,
   showTextShadow,
+  frameStyle,
+  frameColor,
   onName1Change,
   onName2Change,
   onDateChange,
@@ -55,6 +63,8 @@ export function EditorPanel({
   onLeavesDensityChange,
   onTextColorChange,
   onTextShadowToggle,
+  onFrameStyleChange,
+  onFrameColorChange,
 }: EditorPanelProps) {
   const presetColors = [
     { name: 'White', value: '#FFFFFF' },
@@ -65,6 +75,25 @@ export function EditorPanel({
     { name: 'Navy', value: '#1A237E' },
     { name: 'Forest', value: '#1B5E20' },
     { name: 'Burgundy', value: '#6D1D2E' },
+  ]
+
+  const framePresetColors = [
+    { name: 'White', value: '#FFFFFF' },
+    { name: 'Gold', value: '#D4AF37' },
+    { name: 'Silver', value: '#C0C0C0' },
+    { name: 'Rose Gold', value: '#ECC5C0' },
+    { name: 'Ivory', value: '#FFFFF0' },
+    { name: 'Bronze', value: '#CD7F32' },
+  ]
+
+  const frameStyles: { value: FrameStyle; label: string; description: string }[] = [
+    { value: 'none', label: 'None', description: 'No border' },
+    { value: 'elegant', label: 'Elegant', description: 'Classic double line with corner accents' },
+    { value: 'floral', label: 'Floral', description: 'Romantic botanical corners' },
+    { value: 'geometric', label: 'Geometric', description: 'Modern art deco style' },
+    { value: 'vintage', label: 'Vintage', description: 'Timeless curved corners' },
+    { value: 'minimal', label: 'Minimal', description: 'Simple corner brackets' },
+    { value: 'ornate', label: 'Ornate', description: 'Decorative classical flourishes' },
   ]
 
   return (
@@ -216,6 +245,91 @@ export function EditorPanel({
           <p className="text-xs text-muted-foreground pl-7">
             Adds a subtle shadow behind text for better readability on bright backgrounds
           </p>
+        </div>
+      </div>
+
+      <div className="space-y-4 pt-6 border-t border-border">
+        <div className="flex items-center gap-2 mb-2">
+          <FrameCorners size={20} className="text-primary" weight="duotone" />
+          <h3 className="font-heading text-lg font-semibold">Frame & Border</h3>
+        </div>
+
+        <div className="space-y-4">
+          <div className="space-y-3">
+            <Label htmlFor="frame-style" className="font-body text-sm text-muted-foreground">
+              Frame Style
+            </Label>
+            <Select value={frameStyle} onValueChange={(v) => onFrameStyleChange(v as FrameStyle)}>
+              <SelectTrigger id="frame-style" className="w-full">
+                <SelectValue placeholder="Select a frame style" />
+              </SelectTrigger>
+              <SelectContent>
+                {frameStyles.map((style) => (
+                  <SelectItem key={style.value} value={style.value}>
+                    <div className="flex flex-col items-start">
+                      <span className="font-medium">{style.label}</span>
+                      <span className="text-xs text-muted-foreground">{style.description}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {frameStyle !== 'none' && (
+            <>
+              <div className="space-y-3">
+                <Label className="font-body text-sm text-muted-foreground">
+                  Frame Color
+                </Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {framePresetColors.map((preset) => (
+                    <Button
+                      key={preset.value}
+                      variant={frameColor === preset.value ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => onFrameColorChange(preset.value)}
+                      className="h-10 flex items-center justify-center gap-2 p-2"
+                    >
+                      <div
+                        className="w-5 h-5 rounded-full border border-border shadow-sm"
+                        style={{ backgroundColor: preset.value }}
+                      />
+                      <span className="text-xs">{preset.name}</span>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Label htmlFor="custom-frame-color" className="font-body text-sm text-muted-foreground">
+                  Custom Frame Color
+                </Label>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Input
+                      id="custom-frame-color"
+                      type="text"
+                      value={frameColor}
+                      onChange={(e) => onFrameColorChange(e.target.value)}
+                      placeholder="#D4AF37"
+                      className="font-mono text-sm pr-12"
+                    />
+                    <div
+                      className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded border-2 border-border shadow-sm"
+                      style={{ backgroundColor: frameColor }}
+                    />
+                  </div>
+                  <Input
+                    type="color"
+                    value={frameColor}
+                    onChange={(e) => onFrameColorChange(e.target.value)}
+                    className="w-16 h-auto p-1 cursor-pointer"
+                  />
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 

@@ -1,5 +1,5 @@
 import { useKV } from '@github/spark/hooks'
-import { SaveTheDateCard } from '@/components/SaveTheDateCard'
+import { SaveTheDateCard, type FrameStyle } from '@/components/SaveTheDateCard'
 import { ImageUpload } from '@/components/ImageUpload'
 import { EditorPanel } from '@/components/EditorPanel'
 import { Card } from '@/components/ui/card'
@@ -24,6 +24,8 @@ interface CardData {
   leavesDensity: number
   textColor: string
   showTextShadow: boolean
+  frameStyle: FrameStyle
+  frameColor: string
 }
 
 function App() {
@@ -40,6 +42,8 @@ function App() {
     leavesDensity: 20,
     textColor: '#FFFFFF',
     showTextShadow: true,
+    frameStyle: 'none',
+    frameColor: '#D4AF37',
   })
 
   const cardRef = useRef<HTMLDivElement>(null)
@@ -60,6 +64,8 @@ function App() {
     leavesDensity: 20,
     textColor: '#FFFFFF',
     showTextShadow: true,
+    frameStyle: 'none' as FrameStyle,
+    frameColor: '#D4AF37',
   }
 
   const updateCardData = (updates: Partial<CardData>) => {
@@ -77,6 +83,8 @@ function App() {
         leavesDensity: 20,
         textColor: '#FFFFFF',
         showTextShadow: true,
+        frameStyle: 'none',
+        frameColor: '#D4AF37',
       }
       return { ...base, ...updates }
     })
@@ -169,7 +177,244 @@ function App() {
           drawLeaves(ctx, width, height, data.leavesDensity, currentTime)
         }
 
+        drawFrameDecoration(ctx, width, height, data.frameStyle, data.frameColor)
         drawText(ctx, width, height)
+      }
+
+      const drawFrameDecoration = (ctx: CanvasRenderingContext2D, width: number, height: number, style: FrameStyle, color: string) => {
+        if (style === 'none') return
+
+        ctx.save()
+        ctx.strokeStyle = color
+        ctx.fillStyle = color
+        ctx.lineWidth = 3
+
+        const inset = style === 'minimal' ? 72 : style === 'elegant' ? 48 : 36
+
+        if (style === 'elegant') {
+          ctx.lineWidth = 3
+          ctx.strokeRect(inset, inset, width - inset * 2, height - inset * 2)
+          ctx.lineWidth = 1.5
+          ctx.strokeRect(inset + 18, inset + 18, width - inset * 2 - 36, height - inset * 2 - 36)
+          
+          const cornerSize = 96
+          const corners = [
+            { x: inset, y: inset, rot: 0 },
+            { x: width - inset, y: inset, rot: Math.PI / 2 },
+            { x: width - inset, y: height - inset, rot: Math.PI },
+            { x: inset, y: height - inset, rot: -Math.PI / 2 },
+          ]
+          corners.forEach(({ x, y, rot }) => {
+            ctx.save()
+            ctx.translate(x, y)
+            ctx.rotate(rot)
+            ctx.beginPath()
+            ctx.moveTo(0, cornerSize / 2)
+            ctx.quadraticCurveTo(0, 0, cornerSize / 2, 0)
+            ctx.lineWidth = 2
+            ctx.stroke()
+            ctx.beginPath()
+            ctx.arc(cornerSize / 2, 0, 9, 0, Math.PI * 2)
+            ctx.fill()
+            ctx.beginPath()
+            ctx.arc(0, cornerSize / 2, 9, 0, Math.PI * 2)
+            ctx.fill()
+            ctx.restore()
+          })
+        }
+
+        if (style === 'floral') {
+          const floralSize = 240
+          const corners = [
+            { x: inset, y: inset, sx: 1, sy: 1 },
+            { x: width - inset, y: inset, sx: -1, sy: 1 },
+            { x: inset, y: height - inset, sx: 1, sy: -1 },
+            { x: width - inset, y: height - inset, sx: -1, sy: -1 },
+          ]
+          corners.forEach(({ x, y, sx, sy }) => {
+            ctx.save()
+            ctx.translate(x, y)
+            ctx.scale(sx, sy)
+            ctx.globalAlpha = 0.8
+            ctx.beginPath()
+            ctx.moveTo(12, 48)
+            ctx.quadraticCurveTo(12, 12, 48, 12)
+            ctx.quadraticCurveTo(24, 24, 24, 48)
+            ctx.quadraticCurveTo(24, 24, 12, 48)
+            ctx.fill()
+            ctx.beginPath()
+            ctx.moveTo(48, 12)
+            ctx.quadraticCurveTo(60, 18, 66, 30)
+            ctx.quadraticCurveTo(54, 24, 48, 12)
+            ctx.fill()
+            ctx.beginPath()
+            ctx.arc(18, 18, 9, 0, Math.PI * 2)
+            ctx.fill()
+            ctx.beginPath()
+            ctx.arc(30, 12, 6, 0, Math.PI * 2)
+            ctx.fill()
+            ctx.beginPath()
+            ctx.arc(12, 30, 6, 0, Math.PI * 2)
+            ctx.fill()
+            ctx.restore()
+          })
+        }
+
+        if (style === 'geometric') {
+          const cornerCut = 60
+          ctx.beginPath()
+          ctx.moveTo(inset, inset + cornerCut)
+          ctx.lineTo(inset + cornerCut, inset)
+          ctx.lineTo(width - inset - cornerCut, inset)
+          ctx.lineTo(width - inset, inset + cornerCut)
+          ctx.lineTo(width - inset, height - inset - cornerCut)
+          ctx.lineTo(width - inset - cornerCut, height - inset)
+          ctx.lineTo(inset + cornerCut, height - inset)
+          ctx.lineTo(inset, height - inset - cornerCut)
+          ctx.closePath()
+          ctx.lineWidth = 4
+          ctx.stroke()
+          
+          ctx.globalAlpha = 0.6
+          ctx.beginPath()
+          ctx.moveTo(width / 2, inset - 12)
+          ctx.lineTo(width / 2 + 48, inset + 36)
+          ctx.lineTo(width / 2, inset + 84)
+          ctx.lineTo(width / 2 - 48, inset + 36)
+          ctx.closePath()
+          ctx.fill()
+          
+          ctx.beginPath()
+          ctx.moveTo(width / 2, height - inset + 12)
+          ctx.lineTo(width / 2 + 48, height - inset - 36)
+          ctx.lineTo(width / 2, height - inset - 84)
+          ctx.lineTo(width / 2 - 48, height - inset - 36)
+          ctx.closePath()
+          ctx.fill()
+        }
+
+        if (style === 'vintage') {
+          ctx.lineWidth = 3
+          ctx.strokeRect(inset, inset, width - inset * 2, height - inset * 2)
+          ctx.lineWidth = 1.5
+          ctx.setLineDash([12, 12])
+          ctx.strokeRect(inset + 24, inset + 24, width - inset * 2 - 48, height - inset * 2 - 48)
+          ctx.setLineDash([])
+          
+          const cornerSize = 144
+          const corners = [
+            { x: inset + 12, y: inset + 12, rot: 0 },
+            { x: width - inset - 12, y: inset + 12, rot: Math.PI / 2 },
+            { x: width - inset - 12, y: height - inset - 12, rot: Math.PI },
+            { x: inset + 12, y: height - inset - 12, rot: -Math.PI / 2 },
+          ]
+          corners.forEach(({ x, y, rot }) => {
+            ctx.save()
+            ctx.translate(x, y)
+            ctx.rotate(rot)
+            ctx.lineWidth = 3
+            ctx.beginPath()
+            ctx.moveTo(0, cornerSize / 2)
+            ctx.bezierCurveTo(0, 12, 12, 0, cornerSize / 2, 0)
+            ctx.stroke()
+            ctx.lineWidth = 2
+            ctx.beginPath()
+            ctx.moveTo(12, cornerSize / 2 - 12)
+            ctx.bezierCurveTo(12, 24, 24, 12, cornerSize / 2 - 12, 12)
+            ctx.stroke()
+            ctx.beginPath()
+            ctx.arc(cornerSize / 2, 0, 12, 0, Math.PI * 2)
+            ctx.fill()
+            ctx.beginPath()
+            ctx.arc(0, cornerSize / 2, 12, 0, Math.PI * 2)
+            ctx.fill()
+            ctx.restore()
+          })
+        }
+
+        if (style === 'minimal') {
+          const bracketSize = 96
+          ctx.lineWidth = 4
+          const corners = [
+            { x: inset, y: inset, dx: 1, dy: 1 },
+            { x: width - inset, y: inset, dx: -1, dy: 1 },
+            { x: inset, y: height - inset, dx: 1, dy: -1 },
+            { x: width - inset, y: height - inset, dx: -1, dy: -1 },
+          ]
+          corners.forEach(({ x, y, dx, dy }) => {
+            ctx.beginPath()
+            ctx.moveTo(x, y + bracketSize * dy)
+            ctx.lineTo(x, y)
+            ctx.lineTo(x + bracketSize * dx, y)
+            ctx.stroke()
+          })
+        }
+
+        if (style === 'ornate') {
+          ctx.lineWidth = 2
+          ctx.strokeRect(inset + 12, inset + 12, width - inset * 2 - 24, height - inset * 2 - 24)
+          ctx.lineWidth = 1.5
+          ctx.strokeRect(inset + 30, inset + 30, width - inset * 2 - 60, height - inset * 2 - 60)
+          
+          const cornerSize = 192
+          const corners = [
+            { x: inset, y: inset, sx: 1, sy: 1 },
+            { x: width - inset, y: inset, sx: -1, sy: 1 },
+            { x: inset, y: height - inset, sx: 1, sy: -1 },
+            { x: width - inset, y: height - inset, sx: -1, sy: -1 },
+          ]
+          corners.forEach(({ x, y, sx, sy }) => {
+            ctx.save()
+            ctx.translate(x, y)
+            ctx.scale(sx, sy)
+            ctx.globalAlpha = 0.9
+            ctx.beginPath()
+            ctx.moveTo(12, 48)
+            ctx.quadraticCurveTo(12, 12, 48, 12)
+            ctx.lineTo(42, 18)
+            ctx.quadraticCurveTo(18, 18, 18, 42)
+            ctx.closePath()
+            ctx.fill()
+            ctx.beginPath()
+            ctx.arc(48, 12, 9, 0, Math.PI * 2)
+            ctx.fill()
+            ctx.beginPath()
+            ctx.arc(12, 48, 9, 0, Math.PI * 2)
+            ctx.fill()
+            ctx.globalAlpha = 0.5
+            ctx.beginPath()
+            ctx.moveTo(30, 12)
+            ctx.quadraticCurveTo(24, 24, 12, 30)
+            ctx.lineTo(15, 27)
+            ctx.quadraticCurveTo(21, 21, 27, 15)
+            ctx.closePath()
+            ctx.fill()
+            ctx.restore()
+          })
+          
+          ctx.globalAlpha = 0.5
+          ctx.beginPath()
+          ctx.ellipse(inset - 6, height / 2, 6, 48, 0, 0, Math.PI * 2)
+          ctx.fill()
+          ctx.beginPath()
+          ctx.arc(inset - 6, height / 2 - 72, 12, 0, Math.PI * 2)
+          ctx.fill()
+          ctx.beginPath()
+          ctx.arc(inset - 6, height / 2 + 72, 12, 0, Math.PI * 2)
+          ctx.fill()
+          
+          ctx.beginPath()
+          ctx.ellipse(width - inset + 6, height / 2, 6, 48, 0, 0, Math.PI * 2)
+          ctx.fill()
+          ctx.beginPath()
+          ctx.arc(width - inset + 6, height / 2 - 72, 12, 0, Math.PI * 2)
+          ctx.fill()
+          ctx.beginPath()
+          ctx.arc(width - inset + 6, height / 2 + 72, 12, 0, Math.PI * 2)
+          ctx.fill()
+        }
+
+        ctx.restore()
       }
 
       const drawSparkles = (ctx: CanvasRenderingContext2D, width: number, height: number, count: number, time: number) => {
@@ -554,6 +799,8 @@ function App() {
               leavesDensity={data.leavesDensity}
               textColor={data.textColor}
               showTextShadow={data.showTextShadow}
+              frameStyle={data.frameStyle}
+              frameColor={data.frameColor}
             />
             
             <div className="mt-6 space-y-4">
@@ -631,6 +878,8 @@ function App() {
                 leavesDensity={data.leavesDensity}
                 textColor={data.textColor}
                 showTextShadow={data.showTextShadow}
+                frameStyle={data.frameStyle}
+                frameColor={data.frameColor}
                 onName1Change={(value) => updateCardData({ name1: value })}
                 onName2Change={(value) => updateCardData({ name2: value })}
                 onDateChange={(value) => updateCardData({ date: value })}
@@ -642,6 +891,8 @@ function App() {
                 onLeavesDensityChange={(value) => updateCardData({ leavesDensity: value })}
                 onTextColorChange={(value) => updateCardData({ textColor: value })}
                 onTextShadowToggle={(value) => updateCardData({ showTextShadow: value })}
+                onFrameStyleChange={(value) => updateCardData({ frameStyle: value })}
+                onFrameColorChange={(value) => updateCardData({ frameColor: value })}
               />
             </div>
           </Card>
