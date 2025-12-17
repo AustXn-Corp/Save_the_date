@@ -3,7 +3,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
-import { Sparkle, Leaf, Palette } from '@phosphor-icons/react'
+import { Sparkle, Leaf, Palette, TextAa } from '@phosphor-icons/react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 
@@ -18,6 +18,7 @@ interface EditorPanelProps {
   sparklesDensity: number
   leavesDensity: number
   textColor: string
+  showTextShadow: boolean
   onName1Change: (value: string) => void
   onName2Change: (value: string) => void
   onDateChange: (value: string) => void
@@ -28,6 +29,7 @@ interface EditorPanelProps {
   onSparklesDensityChange: (value: number) => void
   onLeavesDensityChange: (value: number) => void
   onTextColorChange: (value: string) => void
+  onTextShadowToggle: (value: boolean) => void
 }
 
 export function EditorPanel({
@@ -41,6 +43,7 @@ export function EditorPanel({
   sparklesDensity,
   leavesDensity,
   textColor,
+  showTextShadow,
   onName1Change,
   onName2Change,
   onDateChange,
@@ -51,6 +54,7 @@ export function EditorPanel({
   onSparklesDensityChange,
   onLeavesDensityChange,
   onTextColorChange,
+  onTextShadowToggle,
 }: EditorPanelProps) {
   const presetColors = [
     { name: 'White', value: '#FFFFFF' },
@@ -192,6 +196,26 @@ export function EditorPanel({
               />
             </div>
           </div>
+
+          <div className="flex items-center justify-between pt-2">
+            <div className="flex items-center gap-2">
+              <TextAa size={20} className="text-primary" weight={showTextShadow ? 'fill' : 'regular'} />
+              <Label htmlFor="text-shadow" className="font-body font-medium cursor-pointer">
+                Text Shadow
+              </Label>
+              {showTextShadow && (
+                <Badge variant="secondary" className="text-xs">Active</Badge>
+              )}
+            </div>
+            <Switch
+              id="text-shadow"
+              checked={showTextShadow}
+              onCheckedChange={onTextShadowToggle}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground pl-7">
+            Adds a subtle shadow behind text for better readability on bright backgrounds
+          </p>
         </div>
       </div>
 

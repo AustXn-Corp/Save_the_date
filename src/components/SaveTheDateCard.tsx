@@ -13,6 +13,7 @@ interface SaveTheDateCardProps {
   sparklesDensity: number
   leavesDensity: number
   textColor: string
+  showTextShadow: boolean
 }
 
 export function SaveTheDateCard({
@@ -27,7 +28,12 @@ export function SaveTheDateCard({
   sparklesDensity,
   leavesDensity,
   textColor,
+  showTextShadow,
 }: SaveTheDateCardProps) {
+  const textShadowStyle = showTextShadow 
+    ? { textShadow: '0 2px 8px rgba(0, 0, 0, 0.7), 0 4px 16px rgba(0, 0, 0, 0.5)' }
+    : {}
+
   return (
     <div data-card-root className="relative w-full aspect-[3/4] rounded-xl overflow-hidden shadow-2xl bg-black">
       {imageUrl ? (
@@ -46,7 +52,7 @@ export function SaveTheDateCard({
       {showSparkles && <Sparkles count={sparklesDensity} />}
       {showLeaves && <Leaves count={leavesDensity} />}
 
-      <div className="relative h-full flex flex-col items-center justify-center p-8 text-center" style={{ color: textColor }}>
+      <div className="relative h-full flex flex-col items-center justify-center p-8 text-center" style={{ color: textColor, ...textShadowStyle }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
