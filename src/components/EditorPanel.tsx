@@ -7,7 +7,7 @@ import { Sparkle, Leaf, Palette, TextAa, FrameCorners, QrCode, ArrowsVertical, T
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import type { FrameStyle, RsvpDisplayMode, TextAlignment } from './SaveTheDateCard'
+import type { FrameStyle, RsvpDisplayMode, TextAlignment, SparkleStyle } from './SaveTheDateCard'
 
 interface EditorPanelProps {
   name1: string
@@ -19,6 +19,7 @@ interface EditorPanelProps {
   showLeaves: boolean
   sparklesDensity: number
   leavesDensity: number
+  sparkleStyle: SparkleStyle
   textColor: string
   showTextShadow: boolean
   frameStyle: FrameStyle
@@ -38,6 +39,7 @@ interface EditorPanelProps {
   onLeavesToggle: (value: boolean) => void
   onSparklesDensityChange: (value: number) => void
   onLeavesDensityChange: (value: number) => void
+  onSparkleStyleChange: (value: SparkleStyle) => void
   onTextColorChange: (value: string) => void
   onTextShadowToggle: (value: boolean) => void
   onFrameStyleChange: (value: FrameStyle) => void
@@ -60,6 +62,7 @@ export function EditorPanel({
   showLeaves,
   sparklesDensity,
   leavesDensity,
+  sparkleStyle,
   textColor,
   showTextShadow,
   frameStyle,
@@ -79,6 +82,7 @@ export function EditorPanel({
   onLeavesToggle,
   onSparklesDensityChange,
   onLeavesDensityChange,
+  onSparkleStyleChange,
   onTextColorChange,
   onTextShadowToggle,
   onFrameStyleChange,
@@ -118,6 +122,14 @@ export function EditorPanel({
     { value: 'vintage', label: 'Vintage', description: 'Timeless curved corners' },
     { value: 'minimal', label: 'Minimal', description: 'Simple corner brackets' },
     { value: 'ornate', label: 'Ornate', description: 'Decorative classical flourishes' },
+  ]
+
+  const sparkleStyles: { value: SparkleStyle; label: string; description: string }[] = [
+    { value: 'rise', label: 'Rise', description: 'Sparkles float upward gently' },
+    { value: 'twinkle', label: 'Twinkle', description: 'Stars that pulse and shimmer' },
+    { value: 'burst', label: 'Burst', description: 'Radiate outward dramatically' },
+    { value: 'float', label: 'Float', description: 'Drift softly in place' },
+    { value: 'shimmer', label: 'Shimmer', description: 'Synchronized wave of light' },
   ]
 
   return (
@@ -466,23 +478,46 @@ export function EditorPanel({
           </div>
           
           {showSparkles && (
-            <div className="pl-7 space-y-2">
-              <div className="flex items-center justify-between">
-                <Label className="font-body text-sm text-muted-foreground">
-                  Density
-                </Label>
-                <span className="font-body text-xs text-muted-foreground">
-                  {sparklesDensity}
-                </span>
+            <div className="pl-7 space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="font-body text-sm text-muted-foreground">
+                    Density
+                  </Label>
+                  <span className="font-body text-xs text-muted-foreground">
+                    {sparklesDensity}
+                  </span>
+                </div>
+                <Slider
+                  value={[sparklesDensity]}
+                  onValueChange={(values) => onSparklesDensityChange(values[0])}
+                  min={5}
+                  max={50}
+                  step={5}
+                  className="w-full"
+                />
               </div>
-              <Slider
-                value={[sparklesDensity]}
-                onValueChange={(values) => onSparklesDensityChange(values[0])}
-                min={5}
-                max={50}
-                step={5}
-                className="w-full"
-              />
+              
+              <div className="space-y-2">
+                <Label className="font-body text-sm text-muted-foreground">
+                  Animation Style
+                </Label>
+                <Select value={sparkleStyle} onValueChange={(v) => onSparkleStyleChange(v as SparkleStyle)}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select animation style" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sparkleStyles.map((style) => (
+                      <SelectItem key={style.value} value={style.value}>
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">{style.label}</span>
+                          <span className="text-xs text-muted-foreground">{style.description}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           )}
         </div>

@@ -1,5 +1,5 @@
 import { useKV } from '@github/spark/hooks'
-import { SaveTheDateCard, type FrameStyle, type RsvpDisplayMode, type TextAlignment } from '@/components/SaveTheDateCard'
+import { SaveTheDateCard, type FrameStyle, type RsvpDisplayMode, type TextAlignment, type SparkleStyle } from '@/components/SaveTheDateCard'
 import { ImageUpload } from '@/components/ImageUpload'
 import { EditorPanel } from '@/components/EditorPanel'
 import { Card } from '@/components/ui/card'
@@ -22,6 +22,7 @@ interface CardData {
   showLeaves: boolean
   sparklesDensity: number
   leavesDensity: number
+  sparkleStyle: SparkleStyle
   textColor: string
   showTextShadow: boolean
   frameStyle: FrameStyle
@@ -46,6 +47,7 @@ function App() {
     showLeaves: true,
     sparklesDensity: 25,
     leavesDensity: 20,
+    sparkleStyle: 'rise',
     textColor: '#FFFFFF',
     showTextShadow: true,
     frameStyle: 'none',
@@ -74,6 +76,7 @@ function App() {
     showLeaves: true,
     sparklesDensity: 25,
     leavesDensity: 20,
+    sparkleStyle: 'rise' as SparkleStyle,
     textColor: '#FFFFFF',
     showTextShadow: true,
     frameStyle: 'none' as FrameStyle,
@@ -99,6 +102,7 @@ function App() {
         showLeaves: true,
         sparklesDensity: 25,
         leavesDensity: 20,
+        sparkleStyle: 'rise',
         textColor: '#FFFFFF',
         showTextShadow: true,
         frameStyle: 'none',
@@ -195,7 +199,7 @@ function App() {
         const currentTime = frameCount / fps
 
         if (data.showSparkles) {
-          drawSparkles(ctx, width, height, data.sparklesDensity, currentTime)
+          drawSparkles(ctx, width, height, data.sparklesDensity, currentTime, data.sparkleStyle || 'rise')
         }
         if (data.showLeaves) {
           drawLeaves(ctx, width, height, data.leavesDensity, currentTime)
@@ -444,38 +448,77 @@ function App() {
         ctx.restore()
       }
 
-      const drawSparkles = (ctx: CanvasRenderingContext2D, width: number, height: number, count: number, time: number) => {
+      const drawSparkles = (ctx: CanvasRenderingContext2D, width: number, height: number, count: number, time: number, style: string) => {
         for (let i = 0; i < count; i++) {
           const seedX = (i * 7919) % width
           const seedY = (i * 9973) % height
-          const cycle = 3 + (i % 3) * 0.5
-          const delay = (i / count) * 3
+          const cycle = style === 'shimmer' ? 1.5 + (i % 3) * 0.3 : style === 'twinkle' ? 2 + (i % 3) * 0.5 : 3 + (i % 3) * 0.5
+          const delay = style === 'shimmer' ? i * 0.1 : (i / count) * 3
           const progress = ((time + delay) % cycle) / cycle
           
-          const x = seedX
-          const y = seedY - 40 * progress
-          const size = 8 + (i % 5) * 2
-          const opacity = progress < 0.2 ? progress / 0.2 : 
-                        progress > 0.8 ? (1 - progress) / 0.2 : 1
+          let x = seedX
+          let y = seedY
+          let size = 8 + (i % 5) * 2
+          let opacity = 1
+          let scale = 1
+
+          switch (style) {
+            case 'rise':
+              y = seedY - 40 * progress
+              opacity = progress < 0.2 ? progress / 0.2 : progress > 0.8 ? (1 - progress) / 0.2 : 1
+              scale = progress < 0.2 ? progress / 0.2 : progress > 0.8 ? (1 - progress) / 0.2 : 1
+              break
+            case 'twinkle':
+              opacity = Math.sin(progress * Math.PI * 2) * 0.5 + 0.5
+              scale = 0.5 + Math.sin(progress * Math.PI * 2) * 0.35 + 0.35
+              break
+            case 'burst':
+              const angle = (i / count) * Math.PI * 2
+              const distance = 30 + (i % 10) * 4
+              const burstProgress = progress < 0.5 ? progress * 2 : 2 - progress * 2
+              x = seedX + Math.cos(angle) * distance * burstProgress
+              y = seedY + Math.sin(angle) * distance * burstProgress
+              opacity = progress < 0.5 ? progress * 2 : (1 - progress) * 2
+              scale = progress < 0.5 ? progress * 3 : (1 - progress) * 3
+              break
+            case 'float':
+              const floatX = Math.sin(progress * Math.PI * 2) * 10
+              const floatY = Math.cos(progress * Math.PI * 2) * 10
+              x = seedX + floatX
+              y = seedY + floatY
+              opacity = 0.3 + Math.sin(progress * Math.PI * 2) * 0.35 + 0.35
+              scale = 0.8 + Math.sin(progress * Math.PI * 2) * 0.1 + 0.1
+              break
+            case 'shimmer':
+              opacity = 0.2 + Math.sin(progress * Math.PI * 2) * 0.4 + 0.4
+              scale = 0.6 + Math.sin(progress * Math.PI * 2) * 0.2 + 0.2
+              break
+            default:
+              y = seedY - 40 * progress
+              opacity = progress < 0.2 ? progress / 0.2 : progress > 0.8 ? (1 - progress) / 0.2 : 1
+              scale = progress < 0.2 ? progress / 0.2 : progress > 0.8 ? (1 - progress) / 0.2 : 1
+          }
+          
+          const finalSize = size * Math.max(0.1, scale)
           
           if (opacity > 0.1) {
             ctx.save()
             ctx.translate(x, y)
             ctx.globalAlpha = opacity * 0.8
             
-            const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, size)
+            const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, finalSize)
             gradient.addColorStop(0, 'rgba(199, 163, 123, 1)')
             gradient.addColorStop(0.5, 'rgba(199, 163, 123, 0.6)')
             gradient.addColorStop(1, 'rgba(199, 163, 123, 0)')
             
             ctx.fillStyle = gradient
             ctx.beginPath()
-            ctx.arc(0, 0, size, 0, Math.PI * 2)
+            ctx.arc(0, 0, finalSize, 0, Math.PI * 2)
             ctx.fill()
             
             ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'
             ctx.beginPath()
-            ctx.arc(0, 0, size * 0.3, 0, Math.PI * 2)
+            ctx.arc(0, 0, finalSize * 0.3, 0, Math.PI * 2)
             ctx.fill()
             
             ctx.restore()
@@ -977,6 +1020,7 @@ function App() {
               showLeaves={data.showLeaves}
               sparklesDensity={data.sparklesDensity}
               leavesDensity={data.leavesDensity}
+              sparkleStyle={data.sparkleStyle || 'rise'}
               textColor={data.textColor}
               showTextShadow={data.showTextShadow}
               frameStyle={data.frameStyle}
@@ -1062,6 +1106,7 @@ function App() {
                 showLeaves={data.showLeaves}
                 sparklesDensity={data.sparklesDensity}
                 leavesDensity={data.leavesDensity}
+                sparkleStyle={data.sparkleStyle || 'rise'}
                 textColor={data.textColor}
                 showTextShadow={data.showTextShadow}
                 frameStyle={data.frameStyle}
@@ -1081,6 +1126,7 @@ function App() {
                 onLeavesToggle={(value) => updateCardData({ showLeaves: value })}
                 onSparklesDensityChange={(value) => updateCardData({ sparklesDensity: value })}
                 onLeavesDensityChange={(value) => updateCardData({ leavesDensity: value })}
+                onSparkleStyleChange={(value) => updateCardData({ sparkleStyle: value })}
                 onTextColorChange={(value) => updateCardData({ textColor: value })}
                 onTextShadowToggle={(value) => updateCardData({ showTextShadow: value })}
                 onFrameStyleChange={(value) => updateCardData({ frameStyle: value })}

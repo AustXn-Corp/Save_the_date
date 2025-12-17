@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 export type FrameStyle = 'none' | 'elegant' | 'floral' | 'geometric' | 'vintage' | 'minimal' | 'ornate'
 export type RsvpDisplayMode = 'none' | 'link' | 'qr' | 'both'
 export type TextAlignment = 'left' | 'center' | 'right'
+export type SparkleStyle = 'rise' | 'twinkle' | 'burst' | 'float' | 'shimmer'
 
 interface SaveTheDateCardProps {
   imageUrl: string | null
@@ -17,6 +18,7 @@ interface SaveTheDateCardProps {
   showLeaves: boolean
   sparklesDensity: number
   leavesDensity: number
+  sparkleStyle: SparkleStyle
   textColor: string
   showTextShadow: boolean
   frameStyle: FrameStyle
@@ -40,6 +42,7 @@ export function SaveTheDateCard({
   showLeaves,
   sparklesDensity,
   leavesDensity,
+  sparkleStyle,
   textColor,
   showTextShadow,
   frameStyle,
@@ -86,7 +89,7 @@ export function SaveTheDateCard({
 
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
 
-      {showSparkles && <Sparkles count={sparklesDensity} />}
+      {showSparkles && <Sparkles count={sparklesDensity} style={sparkleStyle} />}
       {showLeaves && <Leaves count={leavesDensity} />}
 
       <FrameDecoration style={frameStyle} color={frameColor} thickness={frameThickness} />
@@ -247,35 +250,124 @@ function generateQRMatrix(text: string): boolean[][] {
 
 export { generateQRCode }
 
-function Sparkles({ count }: { count: number }) {
+function Sparkles({ count, style }: { count: number; style: SparkleStyle }) {
   const sparkles = Array.from({ length: count })
 
-  return (
-    <div className="absolute inset-0 pointer-events-none">
-      {sparkles.map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-1 h-1 bg-accent rounded-full"
-          style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-          }}
-          animate={{
+  const getAnimationProps = (index: number) => {
+    const randomDelay = Math.random() * 3
+    const randomDuration = 3 + Math.random() * 2
+
+    switch (style) {
+      case 'rise':
+        return {
+          animate: {
             y: [-20, -60],
             opacity: [0, 1, 1, 0],
             scale: [0, 1, 1, 0],
             rotate: [0, 180],
-          }}
-          transition={{
-            duration: 3 + Math.random() * 2,
+          },
+          transition: {
+            duration: randomDuration,
             repeat: Infinity,
-            delay: Math.random() * 3,
-            ease: 'easeInOut',
-          }}
-        >
-          <div className="absolute inset-0 bg-accent blur-sm" />
-        </motion.div>
-      ))}
+            delay: randomDelay,
+            ease: 'easeInOut' as const,
+          },
+        }
+      case 'twinkle':
+        return {
+          animate: {
+            opacity: [0, 1, 0.3, 1, 0],
+            scale: [0.5, 1.2, 0.8, 1.2, 0.5],
+          },
+          transition: {
+            duration: 2 + Math.random() * 1.5,
+            repeat: Infinity,
+            delay: randomDelay,
+            ease: 'easeInOut' as const,
+          },
+        }
+      case 'burst':
+        const angle = (index / count) * Math.PI * 2
+        const distance = 30 + Math.random() * 40
+        return {
+          animate: {
+            x: [0, Math.cos(angle) * distance, 0],
+            y: [0, Math.sin(angle) * distance, 0],
+            opacity: [0, 1, 0],
+            scale: [0, 1.5, 0],
+          },
+          transition: {
+            duration: 2 + Math.random() * 1.5,
+            repeat: Infinity,
+            delay: randomDelay,
+            ease: 'easeOut' as const,
+          },
+        }
+      case 'float':
+        return {
+          animate: {
+            y: [-10, 10, -10],
+            x: [-5, 5, -5],
+            opacity: [0.3, 1, 0.3],
+            scale: [0.8, 1, 0.8],
+            rotate: [0, 360],
+          },
+          transition: {
+            duration: 4 + Math.random() * 2,
+            repeat: Infinity,
+            delay: randomDelay,
+            ease: 'easeInOut' as const,
+          },
+        }
+      case 'shimmer':
+        return {
+          animate: {
+            opacity: [0.2, 1, 0.2],
+            scale: [0.6, 1, 0.6],
+          },
+          transition: {
+            duration: 1.5 + Math.random() * 1,
+            repeat: Infinity,
+            delay: index * 0.1,
+            ease: 'linear' as const,
+          },
+        }
+      default:
+        return {
+          animate: {
+            y: [-20, -60],
+            opacity: [0, 1, 1, 0],
+            scale: [0, 1, 1, 0],
+          },
+          transition: {
+            duration: randomDuration,
+            repeat: Infinity,
+            delay: randomDelay,
+            ease: 'easeInOut' as const,
+          },
+        }
+    }
+  }
+
+  return (
+    <div className="absolute inset-0 pointer-events-none">
+      {sparkles.map((_, i) => {
+        const animProps = getAnimationProps(i)
+        return (
+          <motion.div
+            key={i}
+            className="absolute w-1 h-1 bg-accent rounded-full"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+            animate={animProps.animate}
+            transition={animProps.transition}
+          >
+            <div className="absolute inset-0 bg-accent blur-sm" />
+          </motion.div>
+        )
+      })}
     </div>
   )
 }
