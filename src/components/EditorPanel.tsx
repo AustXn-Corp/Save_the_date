@@ -23,6 +23,7 @@ interface EditorPanelProps {
   showTextShadow: boolean
   frameStyle: FrameStyle
   frameColor: string
+  frameThickness: number
   onName1Change: (value: string) => void
   onName2Change: (value: string) => void
   onDateChange: (value: string) => void
@@ -36,6 +37,7 @@ interface EditorPanelProps {
   onTextShadowToggle: (value: boolean) => void
   onFrameStyleChange: (value: FrameStyle) => void
   onFrameColorChange: (value: string) => void
+  onFrameThicknessChange: (value: number) => void
 }
 
 export function EditorPanel({
@@ -52,6 +54,7 @@ export function EditorPanel({
   showTextShadow,
   frameStyle,
   frameColor,
+  frameThickness,
   onName1Change,
   onName2Change,
   onDateChange,
@@ -65,6 +68,7 @@ export function EditorPanel({
   onTextShadowToggle,
   onFrameStyleChange,
   onFrameColorChange,
+  onFrameThicknessChange,
 }: EditorPanelProps) {
   const presetColors = [
     { name: 'White', value: '#FFFFFF' },
@@ -327,6 +331,28 @@ export function EditorPanel({
                     className="w-16 h-auto p-1 cursor-pointer"
                   />
                 </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="font-body text-sm text-muted-foreground">
+                    Frame Thickness
+                  </Label>
+                  <span className="font-body text-xs text-muted-foreground">
+                    {frameThickness}%
+                  </span>
+                </div>
+                <Slider
+                  value={[frameThickness]}
+                  onValueChange={(values) => onFrameThicknessChange(values[0])}
+                  min={50}
+                  max={200}
+                  step={10}
+                  className="w-full"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Adjust the thickness and size of the frame decorations
+                </p>
               </div>
             </>
           )}

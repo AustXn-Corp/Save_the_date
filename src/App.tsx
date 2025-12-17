@@ -26,6 +26,7 @@ interface CardData {
   showTextShadow: boolean
   frameStyle: FrameStyle
   frameColor: string
+  frameThickness: number
 }
 
 function App() {
@@ -44,6 +45,7 @@ function App() {
     showTextShadow: true,
     frameStyle: 'none',
     frameColor: '#D4AF37',
+    frameThickness: 100,
   })
 
   const cardRef = useRef<HTMLDivElement>(null)
@@ -66,6 +68,7 @@ function App() {
     showTextShadow: true,
     frameStyle: 'none' as FrameStyle,
     frameColor: '#D4AF37',
+    frameThickness: 100,
   }
 
   const updateCardData = (updates: Partial<CardData>) => {
@@ -85,6 +88,7 @@ function App() {
         showTextShadow: true,
         frameStyle: 'none',
         frameColor: '#D4AF37',
+        frameThickness: 100,
       }
       return { ...base, ...updates }
     })
@@ -177,27 +181,28 @@ function App() {
           drawLeaves(ctx, width, height, data.leavesDensity, currentTime)
         }
 
-        drawFrameDecoration(ctx, width, height, data.frameStyle, data.frameColor)
+        drawFrameDecoration(ctx, width, height, data.frameStyle, data.frameColor, data.frameThickness)
         drawText(ctx, width, height)
       }
 
-      const drawFrameDecoration = (ctx: CanvasRenderingContext2D, width: number, height: number, style: FrameStyle, color: string) => {
+      const drawFrameDecoration = (ctx: CanvasRenderingContext2D, width: number, height: number, style: FrameStyle, color: string, thickness: number = 100) => {
         if (style === 'none') return
 
+        const scale = thickness / 100
         ctx.save()
         ctx.strokeStyle = color
         ctx.fillStyle = color
-        ctx.lineWidth = 3
+        ctx.lineWidth = 3 * scale
 
         const inset = style === 'minimal' ? 72 : style === 'elegant' ? 48 : 36
 
         if (style === 'elegant') {
-          ctx.lineWidth = 3
+          ctx.lineWidth = 3 * scale
           ctx.strokeRect(inset, inset, width - inset * 2, height - inset * 2)
-          ctx.lineWidth = 1.5
+          ctx.lineWidth = 1.5 * scale
           ctx.strokeRect(inset + 18, inset + 18, width - inset * 2 - 36, height - inset * 2 - 36)
           
-          const cornerSize = 96
+          const cornerSize = 96 * scale
           const corners = [
             { x: inset, y: inset, rot: 0 },
             { x: width - inset, y: inset, rot: Math.PI / 2 },
@@ -211,20 +216,20 @@ function App() {
             ctx.beginPath()
             ctx.moveTo(0, cornerSize / 2)
             ctx.quadraticCurveTo(0, 0, cornerSize / 2, 0)
-            ctx.lineWidth = 2
+            ctx.lineWidth = 2 * scale
             ctx.stroke()
             ctx.beginPath()
-            ctx.arc(cornerSize / 2, 0, 9, 0, Math.PI * 2)
+            ctx.arc(cornerSize / 2, 0, 9 * scale, 0, Math.PI * 2)
             ctx.fill()
             ctx.beginPath()
-            ctx.arc(0, cornerSize / 2, 9, 0, Math.PI * 2)
+            ctx.arc(0, cornerSize / 2, 9 * scale, 0, Math.PI * 2)
             ctx.fill()
             ctx.restore()
           })
         }
 
         if (style === 'floral') {
-          const floralSize = 240
+          const floralSize = 240 * scale
           const corners = [
             { x: inset, y: inset, sx: 1, sy: 1 },
             { x: width - inset, y: inset, sx: -1, sy: 1 },
@@ -234,7 +239,7 @@ function App() {
           corners.forEach(({ x, y, sx, sy }) => {
             ctx.save()
             ctx.translate(x, y)
-            ctx.scale(sx, sy)
+            ctx.scale(sx * scale, sy * scale)
             ctx.globalAlpha = 0.8
             ctx.beginPath()
             ctx.moveTo(12, 48)
@@ -261,7 +266,7 @@ function App() {
         }
 
         if (style === 'geometric') {
-          const cornerCut = 60
+          const cornerCut = 60 * scale
           ctx.beginPath()
           ctx.moveTo(inset, inset + cornerCut)
           ctx.lineTo(inset + cornerCut, inset)
@@ -272,36 +277,37 @@ function App() {
           ctx.lineTo(inset + cornerCut, height - inset)
           ctx.lineTo(inset, height - inset - cornerCut)
           ctx.closePath()
-          ctx.lineWidth = 4
+          ctx.lineWidth = 4 * scale
           ctx.stroke()
           
           ctx.globalAlpha = 0.6
+          const diamondSize = 48 * scale
           ctx.beginPath()
-          ctx.moveTo(width / 2, inset - 12)
-          ctx.lineTo(width / 2 + 48, inset + 36)
-          ctx.lineTo(width / 2, inset + 84)
-          ctx.lineTo(width / 2 - 48, inset + 36)
+          ctx.moveTo(width / 2, inset - 12 * scale)
+          ctx.lineTo(width / 2 + diamondSize, inset + 36 * scale)
+          ctx.lineTo(width / 2, inset + 84 * scale)
+          ctx.lineTo(width / 2 - diamondSize, inset + 36 * scale)
           ctx.closePath()
           ctx.fill()
           
           ctx.beginPath()
-          ctx.moveTo(width / 2, height - inset + 12)
-          ctx.lineTo(width / 2 + 48, height - inset - 36)
-          ctx.lineTo(width / 2, height - inset - 84)
-          ctx.lineTo(width / 2 - 48, height - inset - 36)
+          ctx.moveTo(width / 2, height - inset + 12 * scale)
+          ctx.lineTo(width / 2 + diamondSize, height - inset - 36 * scale)
+          ctx.lineTo(width / 2, height - inset - 84 * scale)
+          ctx.lineTo(width / 2 - diamondSize, height - inset - 36 * scale)
           ctx.closePath()
           ctx.fill()
         }
 
         if (style === 'vintage') {
-          ctx.lineWidth = 3
+          ctx.lineWidth = 3 * scale
           ctx.strokeRect(inset, inset, width - inset * 2, height - inset * 2)
-          ctx.lineWidth = 1.5
-          ctx.setLineDash([12, 12])
+          ctx.lineWidth = 1.5 * scale
+          ctx.setLineDash([12 * scale, 12 * scale])
           ctx.strokeRect(inset + 24, inset + 24, width - inset * 2 - 48, height - inset * 2 - 48)
           ctx.setLineDash([])
           
-          const cornerSize = 144
+          const cornerSize = 144 * scale
           const corners = [
             { x: inset + 12, y: inset + 12, rot: 0 },
             { x: width - inset - 12, y: inset + 12, rot: Math.PI / 2 },
@@ -312,29 +318,29 @@ function App() {
             ctx.save()
             ctx.translate(x, y)
             ctx.rotate(rot)
-            ctx.lineWidth = 3
+            ctx.lineWidth = 3 * scale
             ctx.beginPath()
             ctx.moveTo(0, cornerSize / 2)
-            ctx.bezierCurveTo(0, 12, 12, 0, cornerSize / 2, 0)
+            ctx.bezierCurveTo(0, 12 * scale, 12 * scale, 0, cornerSize / 2, 0)
             ctx.stroke()
-            ctx.lineWidth = 2
+            ctx.lineWidth = 2 * scale
             ctx.beginPath()
-            ctx.moveTo(12, cornerSize / 2 - 12)
-            ctx.bezierCurveTo(12, 24, 24, 12, cornerSize / 2 - 12, 12)
+            ctx.moveTo(12 * scale, cornerSize / 2 - 12 * scale)
+            ctx.bezierCurveTo(12 * scale, 24 * scale, 24 * scale, 12 * scale, cornerSize / 2 - 12 * scale, 12 * scale)
             ctx.stroke()
             ctx.beginPath()
-            ctx.arc(cornerSize / 2, 0, 12, 0, Math.PI * 2)
+            ctx.arc(cornerSize / 2, 0, 12 * scale, 0, Math.PI * 2)
             ctx.fill()
             ctx.beginPath()
-            ctx.arc(0, cornerSize / 2, 12, 0, Math.PI * 2)
+            ctx.arc(0, cornerSize / 2, 12 * scale, 0, Math.PI * 2)
             ctx.fill()
             ctx.restore()
           })
         }
 
         if (style === 'minimal') {
-          const bracketSize = 96
-          ctx.lineWidth = 4
+          const bracketSize = 96 * scale
+          ctx.lineWidth = 4 * scale
           const corners = [
             { x: inset, y: inset, dx: 1, dy: 1 },
             { x: width - inset, y: inset, dx: -1, dy: 1 },
@@ -351,12 +357,12 @@ function App() {
         }
 
         if (style === 'ornate') {
-          ctx.lineWidth = 2
+          ctx.lineWidth = 2 * scale
           ctx.strokeRect(inset + 12, inset + 12, width - inset * 2 - 24, height - inset * 2 - 24)
-          ctx.lineWidth = 1.5
+          ctx.lineWidth = 1.5 * scale
           ctx.strokeRect(inset + 30, inset + 30, width - inset * 2 - 60, height - inset * 2 - 60)
           
-          const cornerSize = 192
+          const cornerSize = 192 * scale
           const corners = [
             { x: inset, y: inset, sx: 1, sy: 1 },
             { x: width - inset, y: inset, sx: -1, sy: 1 },
@@ -366,7 +372,7 @@ function App() {
           corners.forEach(({ x, y, sx, sy }) => {
             ctx.save()
             ctx.translate(x, y)
-            ctx.scale(sx, sy)
+            ctx.scale(sx * scale, sy * scale)
             ctx.globalAlpha = 0.9
             ctx.beginPath()
             ctx.moveTo(12, 48)
@@ -394,23 +400,23 @@ function App() {
           
           ctx.globalAlpha = 0.5
           ctx.beginPath()
-          ctx.ellipse(inset - 6, height / 2, 6, 48, 0, 0, Math.PI * 2)
+          ctx.ellipse(inset - 6 * scale, height / 2, 6 * scale, 48 * scale, 0, 0, Math.PI * 2)
           ctx.fill()
           ctx.beginPath()
-          ctx.arc(inset - 6, height / 2 - 72, 12, 0, Math.PI * 2)
+          ctx.arc(inset - 6 * scale, height / 2 - 72 * scale, 12 * scale, 0, Math.PI * 2)
           ctx.fill()
           ctx.beginPath()
-          ctx.arc(inset - 6, height / 2 + 72, 12, 0, Math.PI * 2)
+          ctx.arc(inset - 6 * scale, height / 2 + 72 * scale, 12 * scale, 0, Math.PI * 2)
           ctx.fill()
           
           ctx.beginPath()
-          ctx.ellipse(width - inset + 6, height / 2, 6, 48, 0, 0, Math.PI * 2)
+          ctx.ellipse(width - inset + 6 * scale, height / 2, 6 * scale, 48 * scale, 0, 0, Math.PI * 2)
           ctx.fill()
           ctx.beginPath()
-          ctx.arc(width - inset + 6, height / 2 - 72, 12, 0, Math.PI * 2)
+          ctx.arc(width - inset + 6 * scale, height / 2 - 72 * scale, 12 * scale, 0, Math.PI * 2)
           ctx.fill()
           ctx.beginPath()
-          ctx.arc(width - inset + 6, height / 2 + 72, 12, 0, Math.PI * 2)
+          ctx.arc(width - inset + 6 * scale, height / 2 + 72 * scale, 12 * scale, 0, Math.PI * 2)
           ctx.fill()
         }
 
@@ -801,6 +807,7 @@ function App() {
               showTextShadow={data.showTextShadow}
               frameStyle={data.frameStyle}
               frameColor={data.frameColor}
+              frameThickness={data.frameThickness}
             />
             
             <div className="mt-6 space-y-4">
@@ -880,6 +887,7 @@ function App() {
                 showTextShadow={data.showTextShadow}
                 frameStyle={data.frameStyle}
                 frameColor={data.frameColor}
+                frameThickness={data.frameThickness}
                 onName1Change={(value) => updateCardData({ name1: value })}
                 onName2Change={(value) => updateCardData({ name2: value })}
                 onDateChange={(value) => updateCardData({ date: value })}
@@ -893,6 +901,7 @@ function App() {
                 onTextShadowToggle={(value) => updateCardData({ showTextShadow: value })}
                 onFrameStyleChange={(value) => updateCardData({ frameStyle: value })}
                 onFrameColorChange={(value) => updateCardData({ frameColor: value })}
+                onFrameThicknessChange={(value) => updateCardData({ frameThickness: value })}
               />
             </div>
           </Card>
