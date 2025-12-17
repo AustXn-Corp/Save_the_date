@@ -30,6 +30,7 @@ interface CardData {
   rsvpUrl: string
   rsvpDisplayMode: RsvpDisplayMode
   rsvpLabel: string
+  textVerticalPosition: number
 }
 
 function App() {
@@ -52,6 +53,7 @@ function App() {
     rsvpUrl: '',
     rsvpDisplayMode: 'none',
     rsvpLabel: 'RSVP',
+    textVerticalPosition: 25,
   })
 
   const cardRef = useRef<HTMLDivElement>(null)
@@ -78,6 +80,7 @@ function App() {
     rsvpUrl: '',
     rsvpDisplayMode: 'none' as RsvpDisplayMode,
     rsvpLabel: 'RSVP',
+    textVerticalPosition: 25,
   }
 
   const updateCardData = (updates: Partial<CardData>) => {
@@ -101,6 +104,7 @@ function App() {
         rsvpUrl: '',
         rsvpDisplayMode: 'none',
         rsvpLabel: 'RSVP',
+        textVerticalPosition: 25,
       }
       return { ...base, ...updates }
     })
@@ -514,36 +518,39 @@ function App() {
           ctx.shadowOffsetY = 4
         }
         
+        const verticalPos = data.textVerticalPosition || 25
+        const baseY = (verticalPos / 100) * height
+        
         ctx.font = '400 24px Inter, sans-serif'
-        ctx.fillText('SAVE THE DATE', width / 2, height / 2 - 280)
+        ctx.fillText('SAVE THE DATE', width / 2, baseY)
         
         ctx.font = 'bold 120px "Playfair Display", serif'
-        ctx.fillText(data.name1 || 'First Name', width / 2, height / 2 - 140)
+        ctx.fillText(data.name1 || 'First Name', width / 2, baseY + 140)
         
         ctx.font = '400 60px "Playfair Display", serif'
         ctx.globalAlpha = 0.9
-        ctx.fillText('&', width / 2, height / 2 - 40)
+        ctx.fillText('&', width / 2, baseY + 240)
         ctx.globalAlpha = 1
         
         ctx.font = 'bold 120px "Playfair Display", serif'
-        ctx.fillText(data.name2 || 'Second Name', width / 2, height / 2 + 80)
+        ctx.fillText(data.name2 || 'Second Name', width / 2, baseY + 360)
         
         if (data.date) {
           ctx.font = '600 56px "Crimson Pro", serif'
-          ctx.fillText(data.date, width / 2, height / 2 + 200)
+          ctx.fillText(data.date, width / 2, baseY + 480)
         }
         
         if (data.location) {
           ctx.font = '400 36px Inter, sans-serif'
           ctx.globalAlpha = 0.9
-          wrapText(ctx, data.location, width / 2, height / 2 + 280, width - 200, 50)
+          wrapText(ctx, data.location, width / 2, baseY + 560, width - 200, 50)
           ctx.globalAlpha = 1
         }
         
         if (data.message) {
           ctx.font = 'italic 28px Inter, sans-serif'
           ctx.globalAlpha = 0.8
-          wrapText(ctx, data.message, width / 2, height / 2 + 360, width - 200, 40)
+          wrapText(ctx, data.message, width / 2, baseY + 640, width - 200, 40)
           ctx.globalAlpha = 1
         }
         
@@ -561,7 +568,9 @@ function App() {
         const showQr = data.rsvpDisplayMode === 'qr' || data.rsvpDisplayMode === 'both'
         const showLink = data.rsvpDisplayMode === 'link' || data.rsvpDisplayMode === 'both'
         
-        let currentY = height / 2 + 460
+        const verticalPos = data.textVerticalPosition || 25
+        const baseY = (verticalPos / 100) * height
+        let currentY = baseY + 740
         
         ctx.fillStyle = data.textColor || '#FFFFFF'
         
@@ -966,6 +975,7 @@ function App() {
               rsvpUrl={data.rsvpUrl}
               rsvpDisplayMode={data.rsvpDisplayMode}
               rsvpLabel={data.rsvpLabel}
+              textVerticalPosition={data.textVerticalPosition}
             />
             
             <div className="mt-6 space-y-4">
@@ -1049,6 +1059,7 @@ function App() {
                 rsvpUrl={data.rsvpUrl}
                 rsvpDisplayMode={data.rsvpDisplayMode}
                 rsvpLabel={data.rsvpLabel}
+                textVerticalPosition={data.textVerticalPosition}
                 onName1Change={(value) => updateCardData({ name1: value })}
                 onName2Change={(value) => updateCardData({ name2: value })}
                 onDateChange={(value) => updateCardData({ date: value })}
@@ -1066,6 +1077,7 @@ function App() {
                 onRsvpUrlChange={(value) => updateCardData({ rsvpUrl: value })}
                 onRsvpDisplayModeChange={(value) => updateCardData({ rsvpDisplayMode: value })}
                 onRsvpLabelChange={(value) => updateCardData({ rsvpLabel: value })}
+                onTextVerticalPositionChange={(value) => updateCardData({ textVerticalPosition: value })}
               />
             </div>
           </Card>

@@ -3,7 +3,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
-import { Sparkle, Leaf, Palette, TextAa, FrameCorners, QrCode } from '@phosphor-icons/react'
+import { Sparkle, Leaf, Palette, TextAa, FrameCorners, QrCode, ArrowsVertical } from '@phosphor-icons/react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -27,6 +27,7 @@ interface EditorPanelProps {
   rsvpUrl: string
   rsvpDisplayMode: RsvpDisplayMode
   rsvpLabel: string
+  textVerticalPosition: number
   onName1Change: (value: string) => void
   onName2Change: (value: string) => void
   onDateChange: (value: string) => void
@@ -44,6 +45,7 @@ interface EditorPanelProps {
   onRsvpUrlChange: (value: string) => void
   onRsvpDisplayModeChange: (value: RsvpDisplayMode) => void
   onRsvpLabelChange: (value: string) => void
+  onTextVerticalPositionChange: (value: number) => void
 }
 
 export function EditorPanel({
@@ -64,6 +66,7 @@ export function EditorPanel({
   rsvpUrl,
   rsvpDisplayMode,
   rsvpLabel,
+  textVerticalPosition,
   onName1Change,
   onName2Change,
   onDateChange,
@@ -81,6 +84,7 @@ export function EditorPanel({
   onRsvpUrlChange,
   onRsvpDisplayModeChange,
   onRsvpLabelChange,
+  onTextVerticalPositionChange,
 }: EditorPanelProps) {
   const presetColors = [
     { name: 'White', value: '#FFFFFF' },
@@ -261,6 +265,36 @@ export function EditorPanel({
           <p className="text-xs text-muted-foreground pl-7">
             Adds a subtle shadow behind text for better readability on bright backgrounds
           </p>
+
+          <div className="space-y-3 pt-4 border-t border-border/50">
+            <div className="flex items-center gap-2 mb-2">
+              <ArrowsVertical size={20} className="text-primary" weight="duotone" />
+              <Label className="font-body font-medium">
+                Text Position
+              </Label>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="font-body text-sm text-muted-foreground">
+                  Vertical Height
+                </Label>
+                <span className="font-body text-xs text-muted-foreground">
+                  {textVerticalPosition}%
+                </span>
+              </div>
+              <Slider
+                value={[textVerticalPosition]}
+                onValueChange={(values) => onTextVerticalPositionChange(values[0])}
+                min={5}
+                max={60}
+                step={1}
+                className="w-full"
+              />
+              <p className="text-xs text-muted-foreground">
+                Adjust where the text appears vertically on the card (5% = top, 60% = lower)
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 

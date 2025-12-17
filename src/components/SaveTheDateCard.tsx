@@ -24,6 +24,7 @@ interface SaveTheDateCardProps {
   rsvpUrl: string
   rsvpDisplayMode: RsvpDisplayMode
   rsvpLabel: string
+  textVerticalPosition: number
 }
 
 export function SaveTheDateCard({
@@ -45,6 +46,7 @@ export function SaveTheDateCard({
   rsvpUrl,
   rsvpDisplayMode,
   rsvpLabel,
+  textVerticalPosition,
 }: SaveTheDateCardProps) {
   const textShadowStyle = showTextShadow 
     ? { textShadow: '0 2px 8px rgba(0, 0, 0, 0.7), 0 4px 16px rgba(0, 0, 0, 0.5)' }
@@ -83,7 +85,15 @@ export function SaveTheDateCard({
 
       <FrameDecoration style={frameStyle} color={frameColor} thickness={frameThickness} />
 
-      <div className="relative h-full flex flex-col items-center justify-center p-8 text-center" style={{ color: textColor, ...textShadowStyle }}>
+      <div 
+        className="relative h-full flex flex-col items-center p-8 text-center" 
+        style={{ 
+          color: textColor, 
+          ...textShadowStyle,
+          justifyContent: 'flex-start',
+          paddingTop: `${textVerticalPosition}%`
+        }}
+      >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
