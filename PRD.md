@@ -34,11 +34,11 @@ A digital save the date card creator that allows users to design and customize e
 - **Success criteria**: Animations run smoothly at 60fps, sparkles twinkle and drift, leaves flow naturally across the card, density controls respond instantly and affect both live preview and exported image
 
 ### Download/Share
-- **Functionality**: Export the finished card as an animated video (MP4/WebM) or animated GIF with all animations included
-- **Purpose**: Allow users to distribute their animated save the date to guests via text, email, or social media
-- **Trigger**: Select export format, then click download/share button
-- **Progression**: Select format (video/gif) → Click button → Processing with progress indicator → Video renders with live animations for 5 seconds → Download starts or share dialog appears → Confirmation message
-- **Success criteria**: Exported video maintains quality, includes all customizations, captures sparkles and leaves animations in motion, and works across messaging apps and email clients
+- **Functionality**: Export the finished card as an animated video (MP4) or animated GIF with all animations included, and share via native OS share sheet (AirDrop, Messages, Email, etc.)
+- **Purpose**: Allow users to distribute their animated save the date to guests via text, email, AirDrop, or social media on any device
+- **Trigger**: Select export format (MP4 or GIF), then click download or share button
+- **Progression**: Select format (video/gif) → Click button → Processing with progress indicator → Video/GIF renders with live animations for 5 seconds → Download starts or native share sheet appears → Confirmation message
+- **Success criteria**: Exported files maintain quality, include all customizations, capture sparkles and leaves animations in motion, work across iOS/Android messaging apps and email clients, and support AirDrop on iOS devices. MP4 format provides best quality for video players, GIF format ensures universal compatibility across all platforms.
 
 ## Edge Case Handling
 - **No Image Uploaded**: Show elegant placeholder with upload prompt, disable download until image is added
