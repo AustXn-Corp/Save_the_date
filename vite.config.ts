@@ -7,7 +7,7 @@ const projectRoot = process.env.PROJECT_ROOT || import.meta.dirname
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/Save_the_date/',
+  base: '/digital-save-the-dat/',
   plugins: [
     react(),
     tailwindcss(),

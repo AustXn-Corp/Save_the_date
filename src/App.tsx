@@ -129,7 +129,7 @@ function App() {
       }
 
       const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d', { willReadFrequently: format === 'gif' })
+      const ctx = canvas.getContext('2d', { willReadFrequently: true })
       if (!ctx) {
         toast.error('Canvas not supported')
         return null
@@ -140,7 +140,7 @@ function App() {
       canvas.width = width
       canvas.height = height
 
-      const fps = format === 'gif' ? 20 : 30
+      const fps = 20
       const duration = 5
       const totalFrames = fps * duration
       let frameCount = 0
