@@ -1,14 +1,12 @@
-import { useKV } from '@github/spark/hooks'
+import { useLocalStorage } from '@/hooks/useLocalStorage'
 import { SaveTheDateCard, type FrameStyle, type RsvpDisplayMode, type TextAlignment, type SparkleStyle } from '@/components/SaveTheDateCard'
 import { ImageUpload } from '@/components/ImageUpload'
 import { EditorPanel } from '@/components/EditorPanel'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Download, Share, FileVideo, FileImage } from '@phosphor-icons/react'
+import { Download, Share } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { useRef, useState } from 'react'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Label } from '@/components/ui/label'
 import { GIFEncoder, quantize, applyPalette } from 'gifenc'
 
 interface CardData {
@@ -36,7 +34,7 @@ interface CardData {
 }
 
 function App() {
-  const [cardData, setCardData] = useKV<CardData>('save-the-date-card', {
+  const [cardData, setCardData] = useLocalStorage<CardData>('save-the-date-card', {
     imageUrl: null,
     name1: '',
     name2: '',
@@ -63,7 +61,6 @@ function App() {
   const cardRef = useRef<HTMLDivElement>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const [generationProgress, setGenerationProgress] = useState(0)
-  const [exportFormat, setExportFormat] = useState<'video' | 'gif'>('video')
 
   const data = cardData || {
     imageUrl: null,
@@ -118,7 +115,7 @@ function App() {
     })
   }
 
-  const generateAnimatedCard = async (format: 'video' | 'gif'): Promise<Blob | null> => {
+  const generateAnimatedCard = async (): Promise<Blob | null> => {
     if (!cardRef.current) {
       toast.error('Card not ready')
       return null
@@ -780,64 +777,7 @@ function App() {
         ctx.fillText(line, x, currentY)
       }
 
-      if (format === 'video') {
-        const stream = canvas.captureStream(fps)
-        
-        const mimeTypes = [
-          'video/webm;codecs=vp9',
-          'video/webm;codecs=vp8',
-          'video/webm',
-        ]
-        
-        let selectedMimeType = ''
-        for (const mimeType of mimeTypes) {
-          if (MediaRecorder.isTypeSupported(mimeType)) {
-            selectedMimeType = mimeType
-            break
-          }
-        }
-        
-        if (!selectedMimeType) {
-          toast.error('Video recording not supported on this device')
-          return null
-        }
-
-        const mediaRecorder = new MediaRecorder(stream, {
-          mimeType: selectedMimeType,
-          videoBitsPerSecond: 5000000
-        })
-
-        const chunks: Blob[] = []
-        mediaRecorder.ondataavailable = (e) => {
-          if (e.data.size > 0) {
-            chunks.push(e.data)
-          }
-        }
-
-        return new Promise((resolve) => {
-          mediaRecorder.onstop = () => {
-            const blob = new Blob(chunks, { type: selectedMimeType })
-            resolve(blob)
-          }
-
-          mediaRecorder.start()
-
-          const captureLoop = async () => {
-            if (frameCount < totalFrames) {
-              await drawFrame()
-              frameCount++
-              setGenerationProgress(Math.round((frameCount / totalFrames) * 100))
-              setTimeout(() => captureLoop(), 1000 / fps)
-            } else {
-              mediaRecorder.stop()
-              setGenerationProgress(0)
-            }
-          }
-
-          captureLoop()
-        })
-      } else {
-        const gif = GIFEncoder()
+      const gif = GIFEncoder()
         
         const captureLoop = async () => {
           for (frameCount = 0; frameCount < totalFrames; frameCount++) {
@@ -858,15 +798,14 @@ function App() {
           gif.finish()
           setGenerationProgress(0)
           
-          const buffer = gif.bytes()
-          return new Blob([buffer], { type: 'image/gif' })
-        }
-        
-        return captureLoop()
+        const buffer = gif.bytes()
+        return new Blob([buffer], { type: 'image/gif' })
       }
+      
+      return captureLoop()
     } catch (error) {
       console.error('Generation error:', error)
-      toast.error(`Failed to generate ${format}`)
+      toast.error('Failed to generate GIF')
       return null
     }
   }
@@ -875,7 +814,7 @@ function App() {
     setIsGenerating(true)
     setGenerationProgress(0)
     try {
-      const blob = await generateAnimatedCard(exportFormat)
+      const blob = await generateAnimatedCard()
       
       if (!blob) {
         toast.error('Failed to generate file')
@@ -884,8 +823,7 @@ function App() {
         return
       }
 
-      const extension = exportFormat === 'video' ? 'mp4' : 'gif'
-      const fileName = `save-the-date-${data.name1 || 'card'}-${data.name2 || 'card'}.${extension}`
+      const fileName = `save-the-date-${data.name1 || 'card'}-${data.name2 || 'card'}.gif`
       
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
@@ -896,7 +834,7 @@ function App() {
       document.body.removeChild(link)
       URL.revokeObjectURL(url)
       
-      toast.success(`${exportFormat === 'video' ? 'Video' : 'GIF'} downloaded!`)
+      toast.success('GIF downloaded!')
       setIsGenerating(false)
       setGenerationProgress(0)
     } catch (error) {
@@ -911,7 +849,7 @@ function App() {
     setIsGenerating(true)
     setGenerationProgress(0)
     try {
-      const blob = await generateAnimatedCard(exportFormat)
+      const blob = await generateAnimatedCard()
       
       if (!blob) {
         toast.error('Failed to generate file')
@@ -920,9 +858,8 @@ function App() {
         return
       }
 
-      const extension = exportFormat === 'video' ? 'mp4' : 'gif'
-      const mimeType = exportFormat === 'video' ? 'video/mp4' : 'image/gif'
-      const fileName = `save-the-date-${data.name1 || 'card'}-${data.name2 || 'card'}.${extension}`
+      const fileName = `save-the-date-${data.name1 || 'card'}-${data.name2 || 'card'}.gif`
+      const mimeType = 'image/gif'
       
       const file = new File([blob], fileName, { 
         type: mimeType 
@@ -946,7 +883,7 @@ function App() {
               title: 'Save The Date',
               text: shareText,
             })
-            toast.info(`Shared text - downloading ${exportFormat} separately`)
+            toast.info('Shared text - downloading GIF separately')
             
             const url = URL.createObjectURL(blob)
             const link = document.createElement('a')
@@ -1036,33 +973,8 @@ function App() {
             <div className="mt-6 space-y-4">
               <div className="bg-accent/20 border border-accent/30 rounded-lg p-4">
                 <p className="font-body text-sm text-accent-foreground">
-                  <strong>✨ Animated Export:</strong> Your card will be exported as an animated {exportFormat === 'video' ? 'video (MP4)' : 'GIF'} with all sparkles and leaves in motion! Perfect for sharing via text message, email, or AirDrop.
+                  <strong>✨ Animated Export:</strong> Your card will be exported as an animated GIF with all sparkles and leaves in motion! Perfect for sharing via text message, email, or AirDrop.
                 </p>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <Label htmlFor="export-format" className="font-body text-sm font-medium min-w-fit">
-                  Export as:
-                </Label>
-                <Select value={exportFormat} onValueChange={(value: 'video' | 'gif') => setExportFormat(value)}>
-                  <SelectTrigger id="export-format" className="flex-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="video">
-                      <div className="flex items-center gap-2">
-                        <FileVideo size={16} />
-                        <span>Video (MP4) - Best quality</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="gif">
-                      <div className="flex items-center gap-2">
-                        <FileImage size={16} />
-                        <span>Animated GIF - Universal compatibility</span>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
               
               <div className="flex gap-3">
